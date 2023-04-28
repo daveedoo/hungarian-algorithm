@@ -18,12 +18,12 @@
             HousesLocations = new (double x, double y)[n*k];
         }
 
-        public void AddWell(int index, double x, double y)
+        public void SetWellLocation(int index, double x, double y)
         {
             WellsLocations[index] = (x, y);
         }
 
-        public void AddHouse(int index, double x, double y) 
+        public void SetHouseLocation(int index, double x, double y) 
         {
             HousesLocations[index] = (x, y);
         }

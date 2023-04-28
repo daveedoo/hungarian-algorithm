@@ -5,7 +5,11 @@ namespace Application
     {
         public static void Main(string[] args)
         {
-            ProblemInstance problemInstance = FileReader.ReadInputFile(args[0]); //Not yet tested
+            string pathToInputDirectory = "../../../Input";
+            string filename = "2_2.txt";
+            ProblemInstance problemInstance = FileReader.ReadInputFile($"{pathToInputDirectory}/{filename}"); // Only for debug purposes
+            //ProblemInstance problemInstance = FileReader.ReadInputFile($"{pathToInputDirectory}/{args[0]}"); // To be used in regular approach
+
             // TODO:
             // 1. Add conversion of problem instance to graph
             // 2. Add calculation of weights

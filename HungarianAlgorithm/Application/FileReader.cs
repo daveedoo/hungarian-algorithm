@@ -35,16 +35,16 @@
 
                     if (index >= n || index < 0)
                     {
-                        throw new InvalidInputFileFormatException(_lineNo, $"Invalid index for well vertex. Specified index: {index+1}. Valid range: [1, {n}].");
+                        throw new InvalidInputFileFormatException(_lineNo, $"Invalid index for well vertex. Specified index: {index + 1}. Valid range: [1, {n}].");
                     }
 
                     if (vertexLocationSpecified[index])
                     {
-                        throw new InvalidInputFileFormatException(_lineNo, $"Location of the well vertex with index {index} already specified.");
+                        throw new InvalidInputFileFormatException(_lineNo, $"Location of the well vertex with index {index + 1} already specified.");
                     }
                     vertexLocationSpecified[index] = true;
 
-                    problemInstance.AddHouse(index, x, y);
+                    problemInstance.SetWellLocation(index, x, y);
                 }
 
                 vertexLocationSpecified = new bool[n * k];
@@ -59,11 +59,11 @@
 
                     if (vertexLocationSpecified[index])
                     {
-                        throw new InvalidInputFileFormatException(_lineNo, $"Location of the house vertex with index {index} already specified.");
+                        throw new InvalidInputFileFormatException(_lineNo, $"Location of the house vertex with index {index + 1} already specified.");
                     }
                     vertexLocationSpecified[index] = true;
 
-                    problemInstance.AddWell(index, x, y);
+                    problemInstance.SetHouseLocation(index, x, y);
                 }
             }
 
@@ -91,17 +91,17 @@
                 throw new InvalidInputFileFormatException(_lineNo, $"Could not parse line with vertex location. Line: {line}");
             }
 
-            if (int.TryParse(splittedLine[0], out int index))
+            if (!int.TryParse(splittedLine[0], out int index))
             {
                 throw new InvalidInputFileFormatException(_lineNo, $"Could not parse vertex index. Line: {line}");
             }
 
-            if (double.TryParse(splittedLine[0], out double x))
+            if (!double.TryParse(splittedLine[1], out double x))
             {
                 throw new InvalidInputFileFormatException(_lineNo, $"Could not parse vertex x coordinate. Line: {line}");
             }
 
-            if (double.TryParse(splittedLine[0], out double y))
+            if (!double.TryParse(splittedLine[2], out double y))
             {
                 throw new InvalidInputFileFormatException(_lineNo, $"Could not parse vertex y coordinate. Line: {line}");
             }

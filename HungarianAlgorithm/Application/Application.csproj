@@ -15,4 +15,8 @@
     <ProjectReference Include="..\Hungarian\Hungarian.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Input\" />
+  </ItemGroup>
+
 </Project>
