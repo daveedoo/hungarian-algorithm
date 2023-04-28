@@ -1,4 +1,6 @@
-﻿namespace Application
+﻿using Hungarian;
+
+namespace Application
 {
     public static class FileReader
     {
