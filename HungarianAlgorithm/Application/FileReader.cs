@@ -6,65 +6,74 @@
 
         public static ProblemInstance ReadInputFile(string path)
         {
-            ProblemInstance problemInstance;
+            ProblemInstance problemInstance = null;
 
-            using (var reader = new StreamReader(path))
+            try
             {
-                _lineNo = 0;
-
-                string line = reader.ReadLineWrapped();
-                int n = int.Parse(line);
-                if (n < 1)
+                using (var reader = new StreamReader(path))
                 {
-                    throw new InvalidInputFileFormatException(_lineNo, $"Invalid n value. Expected int value >= 1. Provided value: {n}");
-                }
+                    _lineNo = 0;
 
-                line = reader.ReadLineWrapped();
-                int k = int.Parse(line);
-                if (k < 1)
-                {
-                    throw new InvalidInputFileFormatException(_lineNo, $"Invalid k value. Expected int value >= 1. Provided value: {k}");
-                }
-
-                problemInstance = new ProblemInstance(n, k);
-
-                bool[] vertexLocationSpecified = new bool[n];
-                for (int i = 0; i < n; i++)
-                {
-                    (int index, double x, double y) = reader.ReadLineWithVertexLocation();
-
-                    if (index >= n || index < 0)
+                    string line = reader.ReadLineWrapped();
+                    int n = int.Parse(line);
+                    if (n < 1)
                     {
-                        throw new InvalidInputFileFormatException(_lineNo, $"Invalid index for well vertex. Specified index: {index + 1}. Valid range: [1, {n}].");
+                        throw new InvalidInputFileFormatException(_lineNo, $"Invalid n value. Expected int value >= 1. Provided value: {n}");
                     }
 
-                    if (vertexLocationSpecified[index])
+                    line = reader.ReadLineWrapped();
+                    int k = int.Parse(line);
+                    if (k < 1)
                     {
-                        throw new InvalidInputFileFormatException(_lineNo, $"Location of the well vertex with index {index + 1} already specified.");
+                        throw new InvalidInputFileFormatException(_lineNo, $"Invalid k value. Expected int value >= 1. Provided value: {k}");
                     }
-                    vertexLocationSpecified[index] = true;
 
-                    problemInstance.SetWellLocation(index, x, y);
+                    problemInstance = new ProblemInstance(n, k);
+
+                    bool[] vertexLocationSpecified = new bool[n];
+                    for (int i = 0; i < n; i++)
+                    {
+                        (int index, double x, double y) = reader.ReadLineWithVertexLocation();
+
+                        if (index >= n || index < 0)
+                        {
+                            throw new InvalidInputFileFormatException(_lineNo, $"Invalid index for well vertex. Specified index: {index + 1}. Valid range: [1, {n}].");
+                        }
+
+                        if (vertexLocationSpecified[index])
+                        {
+                            throw new InvalidInputFileFormatException(_lineNo, $"Location of the well vertex with index {index + 1} already specified.");
+                        }
+                        vertexLocationSpecified[index] = true;
+
+                        problemInstance.SetWellLocation(index, x, y);
+                    }
+
+                    vertexLocationSpecified = new bool[n * k];
+                    for (int i = 0; i < n * k; i++)
+                    {
+                        (int index, double x, double y) = reader.ReadLineWithVertexLocation();
+
+                        if (index >= n * k || index < 0)
+                        {
+                            throw new InvalidInputFileFormatException(_lineNo, $"Invalid index for house vertex. Specified index: {index + 1}. Valid range: [1, {n * k}].");
+                        }
+
+                        if (vertexLocationSpecified[index])
+                        {
+                            throw new InvalidInputFileFormatException(_lineNo, $"Location of the house vertex with index {index + 1} already specified.");
+                        }
+                        vertexLocationSpecified[index] = true;
+
+                        problemInstance.SetHouseLocation(index, x, y);
+                    }
                 }
-
-                vertexLocationSpecified = new bool[n * k];
-                for (int i = 0; i < n * k; i++)
-                {
-                    (int index, double x, double y) = reader.ReadLineWithVertexLocation();
-
-                    if (index >= n * k || index < 0)
-                    {
-                        throw new InvalidInputFileFormatException(_lineNo, $"Invalid index for house vertex. Specified index: {index + 1}. Valid range: [1, {n*k}].");
-                    }
-
-                    if (vertexLocationSpecified[index])
-                    {
-                        throw new InvalidInputFileFormatException(_lineNo, $"Location of the house vertex with index {index + 1} already specified.");
-                    }
-                    vertexLocationSpecified[index] = true;
-
-                    problemInstance.SetHouseLocation(index, x, y);
-                }
+            }
+            catch (InvalidInputFileFormatException e)
+            {
+                Console.WriteLine($"Invalid input file format at line: {e.LineNo}.");
+                Console.WriteLine(e.Message);
+                Environment.Exit(1);
             }
 
             return problemInstance;
