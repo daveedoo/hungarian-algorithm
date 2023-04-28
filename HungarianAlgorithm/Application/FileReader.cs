@@ -33,9 +33,14 @@
                 {
                     (int index, double x, double y) = reader.ReadLineWithVertexLocation();
 
+                    if (index >= n || index < 0)
+                    {
+                        throw new InvalidInputFileFormatException(_lineNo, $"Invalid index for well vertex. Specified index: {index+1}. Valid range: [1, {n}].");
+                    }
+
                     if (vertexLocationSpecified[index])
                     {
-                        throw new InvalidInputFileFormatException(_lineNo, $"Location of the vertex {index} already specified.");
+                        throw new InvalidInputFileFormatException(_lineNo, $"Location of the well vertex with index {index} already specified.");
                     }
                     vertexLocationSpecified[index] = true;
 
@@ -47,9 +52,14 @@
                 {
                     (int index, double x, double y) = reader.ReadLineWithVertexLocation();
 
+                    if (index >= n * k || index < 0)
+                    {
+                        throw new InvalidInputFileFormatException(_lineNo, $"Invalid index for house vertex. Specified index: {index + 1}. Valid range: [1, {n*k}].");
+                    }
+
                     if (vertexLocationSpecified[index])
                     {
-                        throw new InvalidInputFileFormatException(_lineNo, $"Location of the vertex {index} already specified.");
+                        throw new InvalidInputFileFormatException(_lineNo, $"Location of the house vertex with index {index} already specified.");
                     }
                     vertexLocationSpecified[index] = true;
 
