@@ -1,4 +1,5 @@
-﻿
+﻿using Hungarian;
+
 namespace Application
 {
     static class Program
