@@ -31,7 +31,7 @@ namespace Hungarian
         {
             foreach (var v in graph.Vertices)
             {
-                Console.Write($"{v + 1} ->");
+                Console.Write($"{v + 1} -> ");
                 foreach (var edge in graph.AdjacentEdges(v))
                 {
                     Console.Write($"{edge.GetOtherVertex(v) + 1}, ");
@@ -53,7 +53,7 @@ namespace Hungarian
             var vertices = graph.Vertices.Where(v => v < housesLength);
             foreach (var v in vertices)
             {
-                Console.Write($"{v + 1} ->");
+                Console.Write($"{v + 1} -> ");
                 var edges = graph.AdjacentEdges(v).Where(e => e.GetOtherVertex(v) < housesLength + wellsLength);
                 foreach (var edge in edges)
                 {

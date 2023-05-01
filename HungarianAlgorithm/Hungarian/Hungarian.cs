@@ -18,9 +18,25 @@ namespace Hungarian
         }
 
         //var solution = new QuikGraph.Algorithms.Assignment.HungarianAlgorithm(costs);
-        public void Solve()
+        public Solution Solve()
         {
             GraphUtils.WriteAllEdgesOfBaseGraphWithDistances(_graph, _distances);
+
+            //Mockup
+            Solution solution = new Solution(new List<WellAssignments>
+            {
+                new WellAssignments(0, new List<(int, double)>
+                {
+                    (0, 3), (2, 3)
+                }),
+                new WellAssignments(1, new List<(int, double)>
+                {
+                    (1, 3), (3, 3)
+                })
+            });
+            //
+
+            return solution;
         }
 
         private double[,] CreateDistancesMatrixBasedOnProblemInstance(ProblemInstance problem)
