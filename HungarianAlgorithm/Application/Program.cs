@@ -1,4 +1,5 @@
-﻿
+﻿using Hungarian;
+
 namespace Application
 {
     static class Program
@@ -10,10 +11,8 @@ namespace Application
             ProblemInstance problemInstance = FileReader.ReadInputFile($"{pathToInputDirectory}/{filename}"); // Only for debug purposes
             //ProblemInstance problemInstance = FileReader.ReadInputFile($"{pathToInputDirectory}/{args[0]}"); // To be used in regular approach
 
-            // TODO:
-            // 1. Add conversion of problem instance to graph
-            // 2. Add calculation of weights
-            // 3. Add extending set represneting wells
+            Hungarian.Hungarian algorithm = new Hungarian.Hungarian(problemInstance);
+            algorithm.Solve();
         }
     }
 }
