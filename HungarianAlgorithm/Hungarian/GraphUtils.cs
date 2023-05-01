@@ -34,13 +34,18 @@ namespace Hungarian
                 Console.Write($"{v + 1} ->");
                 foreach (var edge in graph.AdjacentEdges(v))
                 {
-                    Console.Write($"{edge.GetOtherVertex(v)}, ");
+                    Console.Write($"{edge.GetOtherVertex(v) + 1}, ");
                 }
                 Console.WriteLine();
             }
         }
 
-        public static void WriteAllEdgesWithDistances(IUndirectedGraph<int, Edge<int>> graph, double[,] distanceMatrix)
+        /// <summary>
+        /// Writes all edges with costs of base input graph (vertices representing wells are not multiplied)
+        /// </summary>
+        /// <param name="graph"></param>
+        /// <param name="distanceMatrix"></param>
+        public static void WriteAllEdgesOfBaseGraphWithDistances(IUndirectedGraph<int, Edge<int>> graph, double[,] distanceMatrix)
         {
             var housesLength = distanceMatrix.GetLength(0);
             var wellsLength = distanceMatrix.GetLength(1);

@@ -20,7 +20,7 @@ namespace Hungarian
         //var solution = new QuikGraph.Algorithms.Assignment.HungarianAlgorithm(costs);
         public void Solve()
         {
-            GraphUtils.WriteAllEdgesWithDistances(_graph, _distances);
+            GraphUtils.WriteAllEdgesOfBaseGraphWithDistances(_graph, _distances);
         }
 
         private double[,] CreateDistancesMatrixBasedOnProblemInstance(ProblemInstance problem)
