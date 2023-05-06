@@ -6,6 +6,8 @@ namespace Application
     {
         public static void WriteToOutputFile(string path, Solution solution)
         {
+            Console.WriteLine("Saving optimal solution to file...");
+
             try
             {
                 using (var writer = new StreamWriter(path))
@@ -18,10 +20,14 @@ namespace Application
                 Console.WriteLine(e.Message);
                 Environment.Exit(1);
             }
+
+            Console.WriteLine("Optimal solution saved.");
         }
         
         public static void GenerateInputFile(string path, int n, int k, int seed = 0)
         {
+            Console.WriteLine("Generating new file...");
+
             try
             {
                 ProblemInstance problemInstance = ProgramUtils.GenerateProblemInstance(n, k, seed);
@@ -35,7 +41,9 @@ namespace Application
                 Console.WriteLine(e.Message);
                 Environment.Exit(1);
             }
-            Console.Error.WriteLine("File has been generated");
+
+            Console.WriteLine("File has been generated.");
+            Console.WriteLine();
         }
     }
 }

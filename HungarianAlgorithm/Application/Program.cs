@@ -8,26 +8,21 @@ namespace Application
         {
             string pathToInputDirectory = "../../../Input";
             string pathToOutputDirectory = "../../../Output";
-            //string filename = "2_2.txt";
-
-            int n = 5;
-            int k = 4;
             int seed = 420;
-            string filename = $"{n}_{k}.txt";
 
-            FileWriter.GenerateInputFile($"{pathToInputDirectory}/{filename}", n, k, seed);
+            ProgramOptions options = ProgramUtils.ParseInputArgs(args);
 
+            if (options.GenerateFile)
+            {
+                FileWriter.GenerateInputFile($"{pathToInputDirectory}/{options.Filename}", options.N, options.K, seed);
+            }
 
-            //ProblemInstance problemInstance = FileReader.ReadInputFile($"{pathToInputDirectory}/{filename}"); // Only for debug purposes
-            ////ProblemInstance problemInstance = FileReader.ReadInputFile($"{pathToInputDirectory}/{args[0]}"); // To be used in regular approach
+            ProblemInstance problemInstance = FileReader.ReadInputFile($"{pathToInputDirectory}/{options.Filename}");
 
-            //Hungarian.Hungarian algorithm = new Hungarian.Hungarian(problemInstance);
-            //Solution solution = algorithm.Solve();
+            Hungarian.Hungarian algorithm = new Hungarian.Hungarian(problemInstance);
+            Solution solution = algorithm.Solve();
 
-            //FileWriter.WriteToOutputFile($"{pathToOutputDirectory}/{filename}", solution);
+            FileWriter.WriteToOutputFile($"{pathToOutputDirectory}/{options.Filename}", solution);
         }
     }
 }
-
-//int[,] costs = new[,] { { 1 } };
-//Hungarian.Hungarian.Solve(costs);
