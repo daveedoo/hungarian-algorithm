@@ -6,23 +6,24 @@ namespace Application
     {
         public static void Main(string[] args)
         {
-            string pathToInputDirectory = "../../../Input";
-            string pathToOutputDirectory = "../../../Output";
-            int seed = 420;
-
             ProgramOptions options = ProgramUtils.ParseInputArgs(args);
 
+            ProblemInstance problemInstance;
             if (options.GenerateFile)
             {
-                FileWriter.GenerateInputFile($"{pathToInputDirectory}/{options.Filename}", options.N, options.K, seed);
+                problemInstance = ProblemInstanceGenerator.GenerateProblemInstance(options.N, options.K);
+                FileWriter.WriteToOutputFile(options.Filename, problemInstance);
             }
-
-            ProblemInstance problemInstance = FileReader.ReadInputFile($"{pathToInputDirectory}/{options.Filename}");
+            else
+            {
+                problemInstance = FileReader.ReadInputFile(options.Filename);
+            }
 
             Hungarian.Hungarian algorithm = new Hungarian.Hungarian(problemInstance);
             Solution solution = algorithm.Solve();
 
-            FileWriter.WriteToOutputFile($"{pathToOutputDirectory}/{options.Filename}", solution);
+            string outputFileName = options.Filename.Replace(".txt", "_output.txt");
+            FileWriter.WriteToOutputFile(outputFileName, solution);
         }
     }
 }

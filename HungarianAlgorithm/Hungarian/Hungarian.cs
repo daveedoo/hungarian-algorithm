@@ -20,8 +20,6 @@ namespace Hungarian
         //var solution = new QuikGraph.Algorithms.Assignment.HungarianAlgorithm(costs);
         public Solution Solve()
         {
-            Console.WriteLine("Searching for optimal solution...");
-
             //GraphUtils.WriteAllEdgesOfBaseGraphWithDistances(_graph, _distances);
 
             //Mockup
@@ -37,9 +35,6 @@ namespace Hungarian
                 })
             });
             //
-
-            Console.WriteLine("Optimal solution found.");
-            Console.WriteLine();
 
             return solution;
         }

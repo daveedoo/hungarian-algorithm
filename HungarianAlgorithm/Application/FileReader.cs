@@ -9,7 +9,6 @@ namespace Application
         public static ProblemInstance ReadInputFile(string path)
         {
             ProblemInstance problemInstance = null;
-            Console.WriteLine("Reading input file...");
 
             try
             {
@@ -78,14 +77,11 @@ namespace Application
                 Console.WriteLine(e.Message);
                 Environment.Exit(1);
             }
-            catch (FileNotFoundException e)
+            catch (FileNotFoundException)
             {
                 Console.WriteLine($"Could not find file with specified name");
                 Environment.Exit(1);
             }
-
-            Console.WriteLine("Input file loaded.");
-            Console.WriteLine();
 
             return problemInstance;
         }

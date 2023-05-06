@@ -1,6 +1,6 @@
 ﻿namespace Hungarian
 {
-    public class Solution
+    public class Solution : IWriteable
     {
         public readonly IEnumerable<WellAssignments> Assignments;
 

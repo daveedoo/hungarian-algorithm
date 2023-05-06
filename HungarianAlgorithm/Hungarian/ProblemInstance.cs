@@ -1,6 +1,6 @@
 ﻿namespace Hungarian
 {
-    public class ProblemInstance
+    public class ProblemInstance : IWriteable
     {
         public readonly int N;
 
