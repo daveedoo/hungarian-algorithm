@@ -110,9 +110,9 @@ namespace Hungarian
 
 
                 // augment M by path TODO: tidy it up
-                for (int i = 0; i < path.Count / 2; i += 2)
+                for (int i = 0; i < path.Count - 1; i += 2)
                 {
-                    var edgeToAdd = path[2 * i];
+                    var edgeToAdd = path[i];
                     Matching.Add(edgeToAdd);
 
                     var eqEdgeToAdd = eqGraph.OutEdges(edgeToAdd.Source).Where(e => e.Target == edgeToAdd.Target).Single();
@@ -120,7 +120,7 @@ namespace Hungarian
                     eqGraph.AddEdge(new Edge<int>(eqEdgeToAdd.Target, eqEdgeToAdd.Source));
 
 
-                    var edgeToRemove = path[2 * i + 1];
+                    var edgeToRemove = path[i + 1];
                     Matching.RemoveAll(e => e.Source == edgeToRemove.Target && e.Target == edgeToRemove.Source);
 
                     var eqEdgeToRemove = eqGraph.OutEdges(edgeToRemove.Source).Where(e => e.Target == edgeToRemove.Target).Single();
