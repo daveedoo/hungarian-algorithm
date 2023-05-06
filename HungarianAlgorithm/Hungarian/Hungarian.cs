@@ -178,14 +178,11 @@ namespace Hungarian
                     if (!neighboursSet.Contains(neighbour))
                     {
                         freeNeighbour = neighbour;
-                        break;
+                        return false;
                     }
                 }
-
-                if (freeNeighbour is not null)
-                    break;
             }
-            return freeNeighbour is null;
+            return true;
         }
 
         private double[] GetStartingPotential(VertexLabelledGraph graph, out double[] wellsSlackness, out IMutableBidirectionalGraph<int, Edge<int>> equalityGraph)
