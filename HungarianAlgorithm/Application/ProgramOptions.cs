@@ -52,7 +52,7 @@
 
             if (K <= 0)
             {
-                throw new ArgumentException("N cannot be less or equal to 0");
+                throw new ArgumentException("K cannot be less or equal to 0");
             }
         }
     }
