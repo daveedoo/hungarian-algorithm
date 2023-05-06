@@ -1,6 +1,6 @@
 ﻿namespace Hungarian
 {
-    public class WellAssignments
+    public class WellAssignments : IWriteable
     {
         public readonly int WellIndex;
 

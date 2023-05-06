@@ -20,7 +20,7 @@ namespace Hungarian
         //var solution = new QuikGraph.Algorithms.Assignment.HungarianAlgorithm(costs);
         public Solution Solve()
         {
-            GraphUtils.WriteAllEdgesOfBaseGraphWithDistances(_graph, _distances);
+            //GraphUtils.WriteAllEdgesOfBaseGraphWithDistances(_graph, _distances);
 
             //Mockup
             Solution solution = new Solution(new List<WellAssignments>
