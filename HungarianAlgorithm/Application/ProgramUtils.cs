@@ -1,5 +1,4 @@
-﻿using Hungarian;
-namespace Application
+﻿namespace Application
 {
     public static class ProgramUtils
     {
@@ -32,6 +31,15 @@ namespace Application
 
                             programOptions.SetK(int.Parse(args[token]));
                             break;
+                        case "-i":
+                            ++token;
+                            if (token >= args.Length)
+                            {
+                                throw new ArgumentException("Unexpected end of input arguemnts");
+                            }
+
+                            programOptions.SetInputFilename(args[token]);
+                            break;
                         case "-o":
                             ++token;
                             if (token >= args.Length)
@@ -39,7 +47,13 @@ namespace Application
                                 throw new ArgumentException("Unexpected end of input arguemnts");
                             }
 
-                            programOptions.SetFileName(args[token]);
+                            programOptions.SetOutputFilename(args[token]);
+                            break;
+                        case "-v":
+                            programOptions.SetDisplayLogs();
+                            break;
+                        case "-s":
+                            programOptions.SetWriteSolutionToConsole();
                             break;
                         default:
                             throw new ArgumentException("Unrecognized input argument");
@@ -47,7 +61,8 @@ namespace Application
 
                     ++token;
                 }
-            
+
+                programOptions.SetNotSpecifiedValues();
                 programOptions.ValidateAndThrow();
             }
             catch (Exception e)

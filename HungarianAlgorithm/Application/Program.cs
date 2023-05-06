@@ -11,19 +11,41 @@ namespace Application
             ProblemInstance problemInstance;
             if (options.GenerateFile)
             {
+                options.LogStateToConsole("Generating problem instance..");
                 problemInstance = ProblemInstanceGenerator.GenerateProblemInstance(options.N, options.K);
-                FileWriter.WriteToOutputFile(options.Filename, problemInstance);
+                options.LogStateToConsole("Saving problem instance to file..");
+                FileWriter.WriteToOutputFile(options.InputFilename, problemInstance);
+                options.LogStateToConsole("Problem instance saved to file.");
             }
             else
             {
-                problemInstance = FileReader.ReadInputFile(options.Filename);
+                options.LogStateToConsole("Reading problem instance from file..");
+                problemInstance = FileReader.ReadInputFile(options.InputFilename);
+                options.LogStateToConsole("Problem instance lodaded.");
             }
 
+            options.LogStateToConsole("Initializing algorithm..");
             Hungarian.Hungarian algorithm = new Hungarian.Hungarian(problemInstance);
+            options.LogStateToConsole("Staring computations..");
             Solution solution = algorithm.Solve();
+            options.LogStateToConsole("Solution found.");
 
-            string outputFileName = options.Filename.Replace(".txt", "_output.txt");
-            FileWriter.WriteToOutputFile(outputFileName, solution);
+            if (options.WriteSolutionToConsole)
+            {
+                solution.Write();
+            }
+
+            options.LogStateToConsole("Saving solution to output file..");
+            FileWriter.WriteToOutputFile(options.OutputFilename, solution);
+            options.LogStateToConsole("Solution saved to file.");
+        }
+
+        public static void LogStateToConsole(this ProgramOptions programOptions, string message)
+        {
+            if (programOptions.DisplayLogs)
+            {
+                Console.WriteLine(message);
+            }
         }
     }
 }
