@@ -7,12 +7,12 @@ Example program call:
 `./Application.exe -i 2_2.txt`
 
 Following options are supported:
-- `-i` (*i*nput filename) to specify filename to read problem instance 
-- `-o` (*o*utput filename) to specify filename to save solution to (optional)
-- `-n` (*n*) to specify number of wells (optional, default=2)
-- `-k` (*k*) to specify number of houses to which single well can supply water (optional, default=2)
-- `-v` (*v*erbose) whether logs with current state of the program should be displayed (optional, default=false)
-- `-s` (*s*how solution) whether found solution should be displayed on the console (optional, default=false)
+- `-i` (**i**nput filename) to specify filename to read problem instance 
+- `-o` (**o**utput filename) to specify filename to save solution to (optional)
+- `-n` (**n**) to specify number of wells (optional, default=2)
+- `-k` (**k**) to specify number of houses to which single well can supply water (optional, default=2)
+- `-v` (**v**erbose) whether logs with current state of the program should be displayed (optional, default=false)
+- `-s` (**s**how solution) whether found solution should be displayed on the console (optional, default=false)
 
 Order of input arguments does not matter. All flags need to specified separately (for instance -vs is not supported).
 If either n or k is specified new instance of the problem will be generated and saved with the specified input filename.
