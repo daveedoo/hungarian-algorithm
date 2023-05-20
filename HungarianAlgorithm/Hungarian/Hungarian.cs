@@ -37,6 +37,7 @@ namespace Hungarian
             var Matching = new EdgeList<int, Edge<int>>();
             
             GetStartingPotential(_graph, out double[] _, out IMutableBidirectionalGraph<int, Edge<int>> eqGraph);
+            
             var H = Enumerable.Range(0, N).ToHashSet();     // all house vertices
             var W = Enumerable.Range(N, N).ToHashSet();     // all well vertices
             bool[] verticesMatched = new bool[2 * N];
@@ -57,9 +58,12 @@ namespace Hungarian
                         double delta = S.Min(s =>
                             WexceptT.Min(w =>
                             {
-                                _graph.TryGetEdge(s, w, out var edge);
+                                if (!_graph.TryGetEdge(s, w, out var edge))
+                                {
+                                    throw new InvalidOperationException("Selected egde does not exist");
+                                }
                                 return edge.Tag - _graph.GetVertexLabel(s) - _graph.GetVertexLabel(w);
-                            })
+                            })  
                         );
 
                         // TODO: use wellsSlackness
@@ -93,11 +97,12 @@ namespace Hungarian
                     {
                         path = new List<Edge<int>>();
 
-                        Edge<int> pathEdge = eqGraph.InEdges(nextT!.Value).First();
+                        var alternatingTree = GetAlternatingTree(eqGraph, free_s);
+                        Edge<int> pathEdge = alternatingTree.InEdges(nextT!.Value).First();
                         while (pathEdge.Source != free_s)
                         {
                             path.Add(pathEdge);
-                            pathEdge = eqGraph.InEdges(pathEdge.Source).First();
+                            pathEdge = alternatingTree.InEdges(pathEdge.Source).First();
                         }
                         path.Add(pathEdge);
                     }
@@ -107,7 +112,6 @@ namespace Hungarian
                         T.Add(nextT!.Value);
                     }
                 }
-
 
                 // augment M by path TODO: tidy it up
                 for (int i = 0; i < path.Count - 1; i += 2)
@@ -142,16 +146,45 @@ namespace Hungarian
             return CreateSolution(Matching);
         }
 
+        private IMutableBidirectionalGraph<int, Edge<int>> GetAlternatingTree(IMutableBidirectionalGraph<int, Edge<int>> graph, int root)
+        {
+            var alternatingTree = new BidirectionalGraph<int, Edge<int>>();
+            alternatingTree.AddVertexRange(graph.Vertices);
+
+            var queue = new System.Collections.Generic.Queue<int>();
+            bool[] visitedVertices = new bool[graph.VertexCount];
+            
+            queue.Enqueue(root);
+            visitedVertices[root] = true;
+
+            while (queue.Count > 0)
+            {
+                var v = queue.Dequeue();
+                foreach (var edge in graph.OutEdges(v))
+                {
+                    var neighbor = edge.GetOtherVertex(v);
+                    if (!visitedVertices[neighbor])
+                    {
+                        visitedVertices[neighbor] = true;
+                        alternatingTree.AddEdge(edge);
+                        queue.Enqueue(neighbor);
+                    }
+                }
+            }
+
+            return alternatingTree;
+        }
+
         private Solution CreateSolution(EdgeList<int, Edge<int>> matching)
         {
             int N = _problemInstance.N;
             int K = _problemInstance.K;
 
             var assignments = new List<WellAssignments>();
-            for (int well = N * K; well < K * (N + 1); well++)
+            for (int well = N * K; well < (K + 1) * N; well++)
             {
                 var suppliedHouses = new List<(int index, double cost)>();
-                for (int wellCopy = well; wellCopy < 2 * N * K; wellCopy += K)
+                for (int wellCopy = well; wellCopy < 2 * N * K; wellCopy += N)
                 {
                     var house = matching.Find(e => e.Source == wellCopy || e.Target == wellCopy).GetOtherVertex(wellCopy);
                     _graph.TryGetEdge(house, wellCopy, out TaggedUndirectedEdge<int, double> edge);
