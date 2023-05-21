@@ -1,5 +1,6 @@
 ﻿using QuikGraph;
 using QuikGraph.Collections;
+using System;
 
 namespace Hungarian
 {
@@ -7,7 +8,7 @@ namespace Hungarian
     {
         private readonly ProblemInstance _problemInstance;
 
-        private readonly double[,] _distances; // [house_index, well_index]
+        private readonly decimal[,] _distances; // [house_index, well_index]
 
         private readonly VertexLabelledGraph _graph;
 
@@ -21,10 +22,10 @@ namespace Hungarian
             int n = _problemInstance.N * _problemInstance.K;
             var taggedEdges = graph.Edges.Select(e =>
             {
-                double cost = e.Source < n ? GetDistanceBetweenHouseAndWell(e.Source, e.Target) : GetDistanceBetweenHouseAndWell(e.Target, e.Source);
-                return new TaggedUndirectedEdge<int, double>(e.Source, e.Target, cost);
+                decimal cost = e.Source < n ? GetDistanceBetweenHouseAndWell(e.Source, e.Target) : GetDistanceBetweenHouseAndWell(e.Target, e.Source);
+                return new TaggedUndirectedEdge<int, decimal>(e.Source, e.Target, cost);
             });
-            var taggedEdgesGraph = new UndirectedGraph<int, TaggedUndirectedEdge<int, double>>();
+            var taggedEdgesGraph = new UndirectedGraph<int, TaggedUndirectedEdge<int, decimal>>();
             taggedEdgesGraph.AddVertexRange(Enumerable.Range(0, 2 * n));
             taggedEdgesGraph.AddEdgeRange(taggedEdges);
 
@@ -55,14 +56,14 @@ namespace Hungarian
                     {
                         // improving potential
                         var WexceptT = W.Except(T);
-                        double delta = S.Min(s =>
+                        decimal delta = S.Min(s =>
                             WexceptT.Min(w =>
                             {
                                 if (!_graph.TryGetEdge(s, w, out var edge))
                                 {
                                     throw new InvalidOperationException("Selected egde does not exist");
                                 }
-                                return edge.Tag - _graph.GetVertexLabel(s) - _graph.GetVertexLabel(w);
+                                return edge.Tag - (_graph.GetVertexLabel(s) + _graph.GetVertexLabel(w));
                             })  
                         );
 
@@ -183,11 +184,11 @@ namespace Hungarian
             var assignments = new List<WellAssignments>();
             for (int well = N * K; well < (K + 1) * N; well++)
             {
-                var suppliedHouses = new List<(int index, double cost)>();
+                var suppliedHouses = new List<(int index, decimal cost)>();
                 for (int wellCopy = well; wellCopy < 2 * N * K; wellCopy += N)
                 {
                     var house = matching.Find(e => e.Source == wellCopy || e.Target == wellCopy).GetOtherVertex(wellCopy);
-                    _graph.TryGetEdge(house, wellCopy, out TaggedUndirectedEdge<int, double> edge);
+                    _graph.TryGetEdge(house, wellCopy, out TaggedUndirectedEdge<int, decimal> edge);
                     var cost = edge.Tag;
 
                     suppliedHouses.Add((house, cost));
@@ -218,13 +219,13 @@ namespace Hungarian
             return true;
         }
 
-        private double[] GetStartingPotential(VertexLabelledGraph graph, out double[] wellsSlackness, out IMutableBidirectionalGraph<int, Edge<int>> equalityGraph)
+        private decimal[] GetStartingPotential(VertexLabelledGraph graph, out double[] wellsSlackness, out IMutableBidirectionalGraph<int, Edge<int>> equalityGraph)
         {
             var eqGraph = new BidirectionalGraph<int, Edge<int>>();
             eqGraph.AddVertexRange(graph.Vertices);
 
             int N = _problemInstance.N * _problemInstance.K;
-            var potential = new double[2 * N];
+            var potential = new decimal[2 * N];
 
             for (int w = N; w < 2 * N; w++)
             {
@@ -241,9 +242,9 @@ namespace Hungarian
             return potential;
         }
 
-        private double[,] CreateDistancesMatrixBasedOnProblemInstance(ProblemInstance problem)
+        private decimal[,] CreateDistancesMatrixBasedOnProblemInstance(ProblemInstance problem)
         {
-            var costMatrix = new double[problem.N * problem.K, problem.N];
+            var costMatrix = new decimal[problem.N * problem.K, problem.N];
 
             for (int i = 0; i < problem.N * problem.K; i++)
             {
@@ -256,15 +257,15 @@ namespace Hungarian
             return costMatrix;
         }
 
-        private double CalculateDistanceBetweenHouseAndWell(int houseIndex, int wellIndex)
+        private decimal CalculateDistanceBetweenHouseAndWell(int houseIndex, int wellIndex)
         {
             (double x, double y) houseLocation = _problemInstance.HousesLocations[houseIndex];
             (double x, double y) wellLocation = _problemInstance.WellsLocations[wellIndex];
-            return Math.Sqrt((houseLocation.x - wellLocation.x) * (houseLocation.x - wellLocation.x) +
+            return (decimal)Math.Sqrt((houseLocation.x - wellLocation.x) * (houseLocation.x - wellLocation.x) +
                              (houseLocation.y - wellLocation.y) * (houseLocation.y - wellLocation.y));
         }
 
-        private double GetDistanceBetweenHouseAndWell(int houseIndex, int wellIndex)
+        private decimal GetDistanceBetweenHouseAndWell(int houseIndex, int wellIndex)
         {
             return _distances[houseIndex, wellIndex % _problemInstance.N];
         }

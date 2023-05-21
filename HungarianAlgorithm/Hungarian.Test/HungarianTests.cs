@@ -15,7 +15,7 @@ namespace Hungarian.Test
             solution.Assignments.First().WellIndex.ShouldBe(0);
             solution.Assignments.First().SuppliedHouses.ShouldHaveSingleItem();
             solution.Assignments.First().SuppliedHouses[0].index.ShouldBe(0);
-            solution.Assignments.First().SuppliedHouses[0].cost.ShouldBe(1.0);
+            solution.Assignments.First().SuppliedHouses[0].cost.ShouldBe(1.0m);
         }
 
         [Fact]
@@ -31,7 +31,7 @@ namespace Hungarian.Test
 
             var solution = new Hungarian(problem).Solve();
 
-            solution.GetTotalAssignmentCost().ShouldBe(12.0);
+            solution.GetTotalAssignmentCost().ShouldBe(12.0m);
         }
     }
 }
