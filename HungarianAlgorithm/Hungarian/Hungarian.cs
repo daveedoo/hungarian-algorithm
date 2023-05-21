@@ -81,7 +81,7 @@ namespace Hungarian
                         {
                             foreach (var edge in _graph.AdjacentEdges(s))
                             {
-                                if (!eqGraph.ContainsEdge(edge.Source, edge.Target) &&
+                                if (!eqGraph.ContainsEdge(edge.Source, edge.Target) && !eqGraph.ContainsEdge(edge.Target, edge.Source) &&
                                     edge.Tag == _graph.GetVertexLabel(edge.Source) + _graph.GetVertexLabel(edge.Target))
                                 {
                                     eqGraph.AddEdge(new Edge<int>(edge.Source, edge.Target));
