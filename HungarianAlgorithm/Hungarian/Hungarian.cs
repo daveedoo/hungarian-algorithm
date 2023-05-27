@@ -78,6 +78,19 @@ namespace Hungarian
                         }
 
                         // Update eqGraph
+                        var edgesToRemove = new List<Edge<int>>();
+                        foreach (var edge in eqGraph.Edges)
+                        {
+                            _graph.TryGetEdge(edge.Source, edge.Target, out var e);
+                            if (e.Tag != _graph.GetVertexLabel(edge.Source) + _graph.GetVertexLabel(edge.Target))
+                            {
+                                edgesToRemove.Add(edge);
+                            }
+                        }
+                        foreach (var edge in edgesToRemove)
+                        {
+                            eqGraph.RemoveEdge(edge);
+                        }
                         foreach (int s in S)
                         {
                             foreach (var edge in _graph.AdjacentEdges(s))
