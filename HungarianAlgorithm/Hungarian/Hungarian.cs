@@ -37,7 +37,7 @@ namespace Hungarian
             int N = _problemInstance.N * _problemInstance.K;
             var Matching = new EdgeList<int, Edge<int>>();
             
-            GetStartingPotential(_graph, out double[] _, out IMutableBidirectionalGraph<int, Edge<int>> eqGraph);
+            SetStartingPotential(_graph, out IMutableBidirectionalGraph<int, Edge<int>> eqGraph);
             
             var H = Enumerable.Range(0, N).ToHashSet();     // all house vertices
             var W = Enumerable.Range(N, N).ToHashSet();     // all well vertices
@@ -49,23 +49,20 @@ namespace Hungarian
                 var S = new HashSet<int> { free_s };                                // set of alternating tree vertices from H
                 var T = new HashSet<int>();                                         // set of alternating tree vertices from W
 
+                // SLACK: inital slackness
+                var wellsSlackness = new decimal[2*N];  // first N array values are not used. For convenience of use with wells vertices numbers
+                for (int well = N; well < 2*N; well++)
+                {
+                    _graph.TryGetEdge(well, free_s, out var edge);
+                    wellsSlackness[well] = edge.Tag - _graph.GetVertexLabel(well) - _graph.GetVertexLabel(free_s);
+                }
+
                 List<Edge<int>> path = null;
                 while (path is null)
                 {
                     if (AreAllNeighboursInSet(eqGraph, S, T, out int? nextT))   // TODO: call this method once and only update bool when S or T is modified
                     {
-                        // improving potential
-                        var WexceptT = W.Except(T);
-                        decimal delta = S.Min(s =>
-                            WexceptT.Min(w =>
-                            {
-                                if (!_graph.TryGetEdge(s, w, out var edge))
-                                {
-                                    throw new InvalidOperationException("Selected egde does not exist");
-                                }
-                                return edge.Tag - (_graph.GetVertexLabel(s) + _graph.GetVertexLabel(w));
-                            })  
-                        );
+                        decimal delta = W.Except(T).Select(w => wellsSlackness[w]).Min();
 
                         // TODO: use wellsSlackness
                         foreach (int s in S)
@@ -75,6 +72,12 @@ namespace Hungarian
                         foreach (int t in T)
                         {
                             _graph.AddValueToVertexLabel(t, -delta);
+                        }
+                        foreach (var well in W.Except(T))
+                        {
+                            wellsSlackness[well] -= delta;
+                            if (wellsSlackness[well] < 0.0m)
+                                throw new Exception("DEBUG only exception");
                         }
 
                         // Update eqGraph
@@ -91,15 +94,19 @@ namespace Hungarian
                         {
                             eqGraph.RemoveEdge(edge);
                         }
-                        foreach (int s in S)
+                        foreach (var well in W.Except(T))
                         {
-                            foreach (var edge in _graph.AdjacentEdges(s))
+                            if (wellsSlackness[well] == 0.0m)
                             {
-                                if (!eqGraph.ContainsEdge(edge.Source, edge.Target) && !eqGraph.ContainsEdge(edge.Target, edge.Source) &&
-                                    edge.Tag == _graph.GetVertexLabel(edge.Source) + _graph.GetVertexLabel(edge.Target))
+                                foreach (var s in S)
                                 {
-                                    eqGraph.AddEdge(new Edge<int>(edge.Source, edge.Target));
-                                    nextT = edge.GetOtherVertex(s);
+                                    _graph.TryGetEdge(well, s, out var edge);
+                                    if (!eqGraph.ContainsEdge(edge.Source, edge.Target) && !eqGraph.ContainsEdge(edge.Target, edge.Source) &&
+                                        edge.Tag == _graph.GetVertexLabel(edge.Source) + _graph.GetVertexLabel(edge.Target))
+                                    {
+                                        eqGraph.AddEdge(new Edge<int>(edge.Source, edge.Target));
+                                        nextT = edge.GetOtherVertex(s);
+                                    }
                                 }
                             }
                         }
@@ -122,8 +129,18 @@ namespace Hungarian
                     }
                     else
                     {
-                        S.Add(nextTMatchingEdge.GetOtherVertex(nextT!.Value));
+                        int newS = nextTMatchingEdge.GetOtherVertex(nextT!.Value);
+                        S.Add(newS);
                         T.Add(nextT!.Value);
+                        
+                        // SLACK:: update necessary values
+                        foreach (var well in W.Except(T))
+                        {
+                            _graph.TryGetEdge(well, newS, out var edge);
+                            decimal newSSlackness = edge.Tag - _graph.GetVertexLabel(edge.Source) - _graph.GetVertexLabel(edge.Target);
+                            if (newSSlackness < wellsSlackness[well])
+                                wellsSlackness[well] = newSSlackness;
+                        }
                     }
                 }
 
@@ -232,14 +249,12 @@ namespace Hungarian
             return true;
         }
 
-        private decimal[] GetStartingPotential(VertexLabelledGraph graph, out double[] wellsSlackness, out IMutableBidirectionalGraph<int, Edge<int>> equalityGraph)
+        private void SetStartingPotential(VertexLabelledGraph graph, out IMutableBidirectionalGraph<int, Edge<int>> equalityGraph)
         {
             var eqGraph = new BidirectionalGraph<int, Edge<int>>();
             eqGraph.AddVertexRange(graph.Vertices);
 
             int N = _problemInstance.N * _problemInstance.K;
-            var potential = new decimal[2 * N];
-
             for (int w = N; w < 2 * N; w++)
             {
                 var startLabel = graph.AdjacentEdges(w).Min(e => e.Tag);
@@ -250,9 +265,7 @@ namespace Hungarian
                 eqGraph.AddEdgeRange(equalityEdges);
             }
 
-            wellsSlackness = new double[N]; // equal to 0 for every well because that's how starting potential is constructed
             equalityGraph = eqGraph;
-            return potential;
         }
 
         private decimal[,] CreateDistancesMatrixBasedOnProblemInstance(ProblemInstance problem)
