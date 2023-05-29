@@ -1,3 +1,7 @@
+using Application;
+using System.Runtime.Serialization;
+using Xunit.Sdk;
+
 namespace Hungarian.Test
 {
     public class HungarianTests
@@ -32,6 +36,29 @@ namespace Hungarian.Test
             var solution = new Hungarian(problem).Solve();
 
             solution.GetTotalAssignmentCost().ShouldBe(12.0m);
+        }
+
+        [Theory]
+        [InlineData("2_1.txt", "147.8314224171732")]
+        [InlineData("2_2.txt", "12")]
+        [InlineData("2_3.txt", "708.5182971138222")]
+        [InlineData("2_4.txt", "928.9661686596875")]
+        [InlineData("3_1.txt", "192.8913838340144")]
+        [InlineData("3_2.txt", "485.3161664078569")]
+        [InlineData("3_3.txt", "808.9674158743229")]
+        [InlineData("3_4.txt", "1048.7972750709457")]
+        [InlineData("4_1.txt", "477.7720637438752")]
+        [InlineData("5_1.txt", "478.9020930443910")]
+        [InlineData("5_2.txt", "944.7345361548154")]
+        [InlineData("10_1.txt", "494.47088338464058")]
+        public void FromFile(string filename, string expectedCost)
+        {
+            decimal cost = Convert.ToDecimal(expectedCost); // decimal cannot be passed as InlineData
+            var problem = FileReader.ReadInputFile($"../../../../Application/Input/{filename}");
+
+            var solution = new Hungarian(problem).Solve();
+
+            solution.GetTotalAssignmentCost().ShouldBe(cost);
         }
     }
 }
