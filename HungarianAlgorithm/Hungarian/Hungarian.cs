@@ -119,6 +119,7 @@ namespace Hungarian
                     {
                         alternatingTree.AddEdge(new Edge<int>(fromS!.Value, nextT!.Value));
                     }
+                    T.Add(nextT!.Value);
 
                     // nextT is vertex from (N_p(S) \ T)
                     var nextTMatchingEdge = Matching.Find(e => e.Source == nextT || e.Target == nextT);
@@ -138,7 +139,6 @@ namespace Hungarian
                     {
                         int newS = nextTMatchingEdge.GetOtherVertex(nextT!.Value);
                         S.Add(newS);
-                        T.Add(nextT!.Value);
                         alternatingTree.AddEdge(new Edge<int>(nextT!.Value, newS));
                         
                         // SLACK:: update necessary values
