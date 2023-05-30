@@ -185,35 +185,6 @@ namespace Hungarian
             return CreateSolution(Matching);
         }
 
-        private IMutableBidirectionalGraph<int, Edge<int>> GetAlternatingTree(IMutableBidirectionalGraph<int, Edge<int>> graph, int root)
-        {
-            var alternatingTree = new BidirectionalGraph<int, Edge<int>>();
-            alternatingTree.AddVertexRange(graph.Vertices);
-
-            var queue = new System.Collections.Generic.Queue<int>();
-            bool[] visitedVertices = new bool[graph.VertexCount];
-            
-            queue.Enqueue(root);
-            visitedVertices[root] = true;
-
-            while (queue.Count > 0)
-            {
-                var v = queue.Dequeue();
-                foreach (var edge in graph.OutEdges(v))
-                {
-                    var neighbor = edge.GetOtherVertex(v);
-                    if (!visitedVertices[neighbor])
-                    {
-                        visitedVertices[neighbor] = true;
-                        alternatingTree.AddEdge(edge);
-                        queue.Enqueue(neighbor);
-                    }
-                }
-            }
-
-            return alternatingTree;
-        }
-
         private Solution CreateSolution(EdgeList<int, Edge<int>> matching)
         {
             int N = _problemInstance.N;
