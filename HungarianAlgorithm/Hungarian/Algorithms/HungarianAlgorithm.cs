@@ -9,11 +9,12 @@ namespace Hungarian.Algorithms
 
         private decimal[,] _distances { get; set; } // [house_index, well_index]
 
-        private VertexLabelledGraph? _graph { get; set; } = null;
+        private VertexLabelledGraph _graph { get; set; }
 
         public HungarianAlgorithm(ProblemInstance problem)
         {
             _problemInstance = problem;
+            _distances = new decimal[problem.K * problem.N, problem.N];
         }
 
         public Solution Solve(decimal[,] distances)

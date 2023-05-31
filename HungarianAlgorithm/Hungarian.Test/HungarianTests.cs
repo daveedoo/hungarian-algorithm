@@ -1,4 +1,5 @@
 using Application;
+using Hungarian.Algorithms;
 using System.Runtime.Serialization;
 using Xunit.Sdk;
 
@@ -13,7 +14,8 @@ namespace Hungarian.Test
             problem.SetWellLocation(0, 0.0, 0.0);
             problem.SetHouseLocation(0, 0.0, 1.0);
 
-            var solution = new Hungarian(problem).Solve();
+            var hungarianAlgorithm = new HungarianAlgorithm(problem);
+            var solution = hungarianAlgorithm.Solve(problem.CreateDistancesDecimalMatrix());
 
             solution.Assignments.ShouldHaveSingleItem();
             solution.Assignments.First().WellIndex.ShouldBe(0);
@@ -33,9 +35,10 @@ namespace Hungarian.Test
             problem.SetHouseLocation(2, 2.0, -3.0);
             problem.SetHouseLocation(3, 6.0, 3.0);
 
-            var solution = new Hungarian(problem).Solve();
+            var hungarianAlgorithm = new HungarianAlgorithm(problem);
+            var solution = hungarianAlgorithm.Solve(problem.CreateDistancesDecimalMatrix());
 
-            solution.GetTotalAssignmentCost().ShouldBe(12.0m);
+            solution.TotalAssignmentCost.ShouldBe(12.0m);
         }
 
         [Theory]
@@ -56,9 +59,10 @@ namespace Hungarian.Test
             decimal cost = Convert.ToDecimal(expectedCost); // decimal cannot be passed as InlineData
             var problem = FileReader.ReadInputFile($"../../../../Application/Input/{filename}");
 
-            var solution = new Hungarian(problem).Solve();
+            var hungarianAlgorithm = new HungarianAlgorithm(problem);
+            var solution = hungarianAlgorithm.Solve(problem.CreateDistancesDecimalMatrix());
 
-            solution.GetTotalAssignmentCost().ShouldBe(cost);
+            solution.TotalAssignmentCost.ShouldBe(cost);
         }
     }
 }

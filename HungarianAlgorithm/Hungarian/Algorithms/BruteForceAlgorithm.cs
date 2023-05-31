@@ -9,6 +9,7 @@
         public BruteForceAlgorithm(ProblemInstance problem)
         {
             _problemInstance = problem;
+            _distances = new decimal[problem.K * problem.N, problem.N];
         }
 
         public Solution Solve(decimal[,] distances)
