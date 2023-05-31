@@ -4,9 +4,9 @@
     {
         public readonly int WellIndex;
 
-        public readonly IList<(int index, double cost)> SuppliedHouses;
+        public readonly IList<(int index, decimal cost)> SuppliedHouses;
 
-        public WellAssignments(int wellIndex, IList<(int index, double cost)> suppliedHouses)
+        public WellAssignments(int wellIndex, IList<(int index, decimal cost)> suppliedHouses)
         {
             WellIndex = wellIndex;
             SuppliedHouses = suppliedHouses;
@@ -25,7 +25,7 @@
             textWriter.WriteLine();
         }
 
-        public double GetTotalAssignmentCost()
+        public decimal GetTotalAssignmentCost()
         {
             return SuppliedHouses.Select(suppliedHouse => suppliedHouse.cost).Sum();
         }

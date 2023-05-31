@@ -20,7 +20,7 @@
             textWriter.WriteLine($"Sumaryczny koszt: {GetTotalAssignmentCost()}");
         }
 
-        public double GetTotalAssignmentCost()
+        public decimal GetTotalAssignmentCost()
         {
             return Assignments.Sum(assignment => assignment.GetTotalAssignmentCost());
         }
