@@ -47,5 +47,28 @@
                 textWriter.WriteLine($"{i + 1} {x} {y}");
             }
         }
+
+        public decimal[,] CreateDistancesMatrix()
+        {
+            var costMatrix = new decimal[N * K, N];
+
+            for (int i = 0; i < N * K; i++)
+            {
+                for (int j = 0; j < N; j++)
+                {
+                    costMatrix[i, j] = CalculateDistanceBetweenHouseAndWell(i, j);
+                }
+            }
+
+            return costMatrix;
+        }
+
+        private decimal CalculateDistanceBetweenHouseAndWell(int houseIndex, int wellIndex)
+        {
+            (double x, double y) houseLocation = HousesLocations[houseIndex];
+            (double x, double y) wellLocation = WellsLocations[wellIndex];
+            return (decimal)Math.Sqrt((houseLocation.x - wellLocation.x) * (houseLocation.x - wellLocation.x) +
+                             (houseLocation.y - wellLocation.y) * (houseLocation.y - wellLocation.y));
+        }
     }
 }

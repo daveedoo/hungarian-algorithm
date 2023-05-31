@@ -1,9 +1,9 @@
 ﻿using QuikGraph;
 using QuikGraph.Collections;
 
-namespace Hungarian
+namespace Hungarian.Algorithms
 {
-    public class Hungarian
+    public class Hungarian : IAlgorithm
     {
         private readonly ProblemInstance _problemInstance;
 
@@ -14,7 +14,7 @@ namespace Hungarian
         public Hungarian(ProblemInstance problem)
         {
             _problemInstance = problem;
-            _distances = CreateDistancesMatrixBasedOnProblemInstance(problem);
+            _distances = problem.CreateDistancesMatrix();
             var graph = GraphUtils.CreateGraphBasedOnProblemInstance(problem);
 
             // TODO: Move creation of LabelledGraph elsewhere
@@ -35,9 +35,9 @@ namespace Hungarian
         {
             int N = _problemInstance.N * _problemInstance.K;
             var Matching = new EdgeList<int, Edge<int>>();
-            
+
             SetStartingPotential(_graph, out IMutableBidirectionalGraph<int, Edge<int>> eqGraph);
-            
+
             var H = Enumerable.Range(0, N).ToHashSet();     // all house vertices
             var W = Enumerable.Range(N, N).ToHashSet();     // all well vertices
             bool[] verticesMatched = new bool[2 * N];
@@ -51,8 +51,8 @@ namespace Hungarian
                 alternatingTree.AddVertexRange(Enumerable.Range(0, 2 * N));
 
                 // SLACK: inital slackness
-                var wellsSlackness = new decimal[2*N];  // first N array values are not used. For convenience of use with wells vertices numbers
-                for (int well = N; well < 2*N; well++)
+                var wellsSlackness = new decimal[2 * N];  // first N array values are not used. For convenience of use with wells vertices numbers
+                for (int well = N; well < 2 * N; well++)
                 {
                     _graph.TryGetEdge(well, free_s, out var edge);
                     wellsSlackness[well] = edge.Tag - _graph.GetVertexLabel(well) - _graph.GetVertexLabel(free_s);
@@ -140,7 +140,7 @@ namespace Hungarian
                         int newS = nextTMatchingEdge.GetOtherVertex(nextT!.Value);
                         S.Add(newS);
                         alternatingTree.AddEdge(new Edge<int>(nextT!.Value, newS));
-                        
+
                         // SLACK:: update necessary values
                         foreach (var well in W.Except(T))
                         {
@@ -172,7 +172,7 @@ namespace Hungarian
                 }
                 var lastEdge = path.Last();
                 Matching.Add(lastEdge);
-                
+
                 var eqEdge = eqGraph.OutEdges(lastEdge.Source).Where(e => e.Target == lastEdge.Target).Single();
                 eqGraph.RemoveEdge(eqEdge);
                 eqGraph.AddEdge(new Edge<int>(eqEdge.Target, eqEdge.Source));
@@ -253,29 +253,6 @@ namespace Hungarian
             }
 
             equalityGraph = eqGraph;
-        }
-
-        private decimal[,] CreateDistancesMatrixBasedOnProblemInstance(ProblemInstance problem)
-        {
-            var costMatrix = new decimal[problem.N * problem.K, problem.N];
-
-            for (int i = 0; i < problem.N * problem.K; i++)
-            {
-                for (int j = 0; j < problem.N; j++)
-                {
-                    costMatrix[i, j] = CalculateDistanceBetweenHouseAndWell(i, j);
-                }
-            }
-
-            return costMatrix;
-        }
-
-        private decimal CalculateDistanceBetweenHouseAndWell(int houseIndex, int wellIndex)
-        {
-            (double x, double y) houseLocation = _problemInstance.HousesLocations[houseIndex];
-            (double x, double y) wellLocation = _problemInstance.WellsLocations[wellIndex];
-            return (decimal)Math.Sqrt((houseLocation.x - wellLocation.x) * (houseLocation.x - wellLocation.x) +
-                             (houseLocation.y - wellLocation.y) * (houseLocation.y - wellLocation.y));
         }
 
         private decimal GetDistanceBetweenHouseAndWell(int houseIndex, int wellIndex)

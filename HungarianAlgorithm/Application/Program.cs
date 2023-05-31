@@ -1,4 +1,6 @@
 ﻿using Hungarian;
+using Hungarian.Algorithms;
+using System.Diagnostics;
 
 namespace Application
 {
@@ -25,18 +27,35 @@ namespace Application
             }
 
             options.LogStateToConsole("Initializing algorithm..");
-            Hungarian.Hungarian algorithm = new Hungarian.Hungarian(problemInstance);
+            IAlgorithm hungarian = new Hungarian.Algorithms.Hungarian(problemInstance);
+            IAlgorithm brute = new Hungarian.Algorithms.BruteForceAlgorithm(problemInstance);
+
+            var timer = new Stopwatch();
+            timer.Start();
+            Solution hungarian_solution = hungarian.Solve();
+            timer.Stop();
+            TimeSpan timeTaken = timer.Elapsed;
+            Console.WriteLine("Hungarian: " + timeTaken.ToString(@"m\:ss\.fff"));
+
+            timer = new Stopwatch();
+            timer.Start();
+            Solution brute_solution_algorithm = brute.Solve();
+            timer.Stop();
+            timeTaken = timer.Elapsed;
+            Console.WriteLine("Brute force: " + timeTaken.ToString(@"m\:ss\.fff")); //n*k = 12 takes about 15 minutes
+
             options.LogStateToConsole("Staring computations..");
-            Solution solution = algorithm.Solve();
             options.LogStateToConsole("Solution found.");
 
             if (options.WriteSolutionToConsole)
             {
-                solution.Write();
+                hungarian_solution.Write();
             }
 
             options.LogStateToConsole("Saving solution to output file..");
-            FileWriter.WriteToOutputFile(options.OutputFilename, solution);
+
+            FileWriter.WriteToOutputFile(options.OutputFilename.Replace(".txt", "_h.txt"), hungarian_solution);
+            FileWriter.WriteToOutputFile(options.OutputFilename.Replace(".txt", "_b.txt"), brute_solution_algorithm);
             options.LogStateToConsole("Solution saved to file.");
         }
 
