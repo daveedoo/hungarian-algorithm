@@ -48,15 +48,30 @@
             }
         }
 
-        public decimal[,] CreateDistancesMatrix()
+        public decimal[,] CreateDistancesDecimalMatrix()
         {
             var costMatrix = new decimal[N * K, N];
 
             for (int i = 0; i < N * K; i++)
             {
-                for (int j = 0; j < N; j++)
+                for (int j = 0; j < N * K; j++)
                 {
                     costMatrix[i, j] = CalculateDistanceBetweenHouseAndWell(i, j);
+                }
+            }
+
+            return costMatrix;
+        }
+
+        public int[,] CreateDistancesIntMatrix()
+        {
+            var costMatrix = new int[N * K, N * K];
+
+            for (int i = 0; i < N * K; i++)
+            {
+                for (int j = 0; j < N * K; j++)
+                {
+                    costMatrix[i, j] = (int)CalculateDistanceBetweenHouseAndWell(i, j);
                 }
             }
 
@@ -66,7 +81,7 @@
         private decimal CalculateDistanceBetweenHouseAndWell(int houseIndex, int wellIndex)
         {
             (double x, double y) houseLocation = HousesLocations[houseIndex];
-            (double x, double y) wellLocation = WellsLocations[wellIndex];
+            (double x, double y) wellLocation = WellsLocations[wellIndex % N];
             return (decimal)Math.Sqrt((houseLocation.x - wellLocation.x) * (houseLocation.x - wellLocation.x) +
                              (houseLocation.y - wellLocation.y) * (houseLocation.y - wellLocation.y));
         }

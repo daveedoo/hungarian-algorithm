@@ -4,16 +4,17 @@
     {
         private readonly ProblemInstance _problemInstance;
 
-        private readonly decimal[,] _distances; // [house_index, well_index]
+        private decimal[,] _distances { get; set; } // [house_index, well_index]
 
         public BruteForceAlgorithm(ProblemInstance problem)
         {
             _problemInstance = problem;
-            _distances = problem.CreateDistancesMatrix();
         }
 
-        public Solution Solve()
+        public Solution Solve(decimal[,] distances)
         {
+            _distances = distances;
+
             List<int> housesList = new List<int>(Enumerable.Range(0, _problemInstance.N * _problemInstance.K));
             List<int> bestAssignment = new List<int>();
             var bestAssignmentCost = decimal.MaxValue;
@@ -88,6 +89,23 @@
             }
 
             return new Solution(assignments);
+        }
+
+        public Solution Solve(int[,] distances)
+        {
+            int firstDimension = distances.GetLength(0);
+            int secondDimension = distances.GetLength(1);
+
+            var decimalDistances = new decimal[firstDimension, secondDimension];
+            for (int i = 0; i < firstDimension; i++)
+            {
+                for (int j = 0; j < secondDimension; j++)
+                {
+                    decimalDistances[i, j] = distances[i, j];
+                }
+            }
+
+            return Solve(decimalDistances);
         }
     }
 }

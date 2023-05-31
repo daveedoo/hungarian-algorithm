@@ -2,6 +2,8 @@
 {
     public interface IAlgorithm
     {
-        Solution Solve();
+        Solution Solve(decimal[,] _distances);
+
+        Solution Solve(int[,] _distances);
     }
 }
