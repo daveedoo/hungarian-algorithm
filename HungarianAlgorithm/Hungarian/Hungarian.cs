@@ -47,6 +47,7 @@ namespace Hungarian
                 int free_s = verticesMatched.TakeWhile(h => h == true).Count();     // root of the alternating tree
                 var S = new HashSet<int> { free_s };                                // set of alternating tree vertices from H
                 var T = new HashSet<int>();                                         // set of alternating tree vertices from W
+                var areAllNeighborsInT = new bool[N];                               // valid for each s in S
                 var alternatingTree = new BidirectionalGraph<int, Edge<int>>();
                 alternatingTree.AddVertexRange(Enumerable.Range(0, 2 * N));
 
@@ -62,7 +63,7 @@ namespace Hungarian
                 List<Edge<int>> path = null;
                 while (path is null)
                 {
-                    if (AreAllNeighboursInSet(eqGraph, S, T, out int? nextT, out int? fromS))   // TODO: call this method once and only update bool when S or T is modified
+                    if (AreAllNeighborsInSet(eqGraph, S, T, areAllNeighborsInT, out int? nextT, out int? fromS))   // TODO: call this method once and only update bool when S or T is modified
                     {
                         decimal delta = W.Except(T).Select(w => wellsSlackness[w]).Min();
                         foreach (int s in S)
@@ -215,22 +216,27 @@ namespace Hungarian
         /// </param>
         /// <param name="fromS">Set only if <paramref name="freeNeighbour"/> set.</param>
         /// <returns></returns>
-        private bool AreAllNeighboursInSet(IImplicitGraph<int, Edge<int>> graph, ISet<int> sourcesSet, ISet<int> neighboursSet, out int? freeNeighbour, out int? fromS)
+        private bool AreAllNeighborsInSet(IImplicitGraph<int, Edge<int>> graph, ISet<int> sourcesSet, ISet<int> neighboursSet,
+            bool[] allNeighborsDone, out int? freeNeighbour, out int? fromS)
         {
             fromS = null;
             freeNeighbour = null;
 
             foreach (int s in sourcesSet)
             {
-                foreach (var edge in graph.OutEdges(s))
+                if (!allNeighborsDone[s])
                 {
-                    int neighbour = edge.GetOtherVertex(s);
-                    if (!neighboursSet.Contains(neighbour))
+                    foreach (var edge in graph.OutEdges(s))
                     {
-                        fromS = s;
-                        freeNeighbour = neighbour;
-                        return false;
+                        int neighbour = edge.GetOtherVertex(s);
+                        if (!neighboursSet.Contains(neighbour))
+                        {
+                            fromS = s;
+                            freeNeighbour = neighbour;
+                            return false;
+                        }
                     }
+                    allNeighborsDone[s] = true;
                 }
             }
             return true;
