@@ -1,6 +1,5 @@
 ﻿using Hungarian;
 using Hungarian.Algorithms;
-using System.Diagnostics;
 
 namespace Application
 {
@@ -28,35 +27,12 @@ namespace Application
 
             options.LogStateToConsole("Initializing algorithm..");
             IAlgorithm hungarian = new HungarianAlgorithm(problemInstance);
-            IAlgorithm library = new LibraryAlgorithm(problemInstance);
-            IAlgorithm brute = new BruteForceAlgorithm(problemInstance);
 
             var distances = problemInstance.CreateDistancesIntMatrix();
             //var distances = problemInstance.CreateDistancesDecimalMatrix();
 
             options.LogStateToConsole("Starting computations..");
-
-            var timer = new Stopwatch();
-            timer.Start();
             Solution hungarian_solution = hungarian.Solve(distances);
-            timer.Stop();
-            TimeSpan timeTaken = timer.Elapsed;
-            Console.WriteLine("Hungarian: " + timeTaken.ToString(@"m\:ss\.fff"));
-
-            timer = new Stopwatch();
-            timer.Start();
-            Solution library_solution = library.Solve(distances);
-            timer.Stop();
-            timeTaken = timer.Elapsed;
-            Console.WriteLine("Library: " + timeTaken.ToString(@"m\:ss\.fff"));
-
-            timer = new Stopwatch();
-            timer.Start();
-            Solution brute_solution_algorithm = brute.Solve(distances);
-            timer.Stop();
-            timeTaken = timer.Elapsed;
-            Console.WriteLine("Brute force: " + timeTaken.ToString(@"m\:ss\.fff")); //n*k = 12 takes about 15 minutes
-
             options.LogStateToConsole("Solution found.");
 
             if (options.WriteSolutionToConsole)
@@ -66,9 +42,7 @@ namespace Application
 
             options.LogStateToConsole("Saving solution to output file..");
 
-            FileWriter.WriteToOutputFile(options.OutputFilename.Replace(".txt", "_h.txt"), hungarian_solution);
-            FileWriter.WriteToOutputFile(options.OutputFilename.Replace(".txt", "_l.txt"), library_solution);
-            FileWriter.WriteToOutputFile(options.OutputFilename.Replace(".txt", "_b.txt"), brute_solution_algorithm);
+            FileWriter.WriteToOutputFile(options.OutputFilename, hungarian_solution);
             options.LogStateToConsole("Solution saved to file.");
         }
 

@@ -39,6 +39,10 @@ namespace TestRunner
 
             FileWriter.WriteToOutputFile(outputFileName.Replace(".txt", "_h.txt"), hungarian_solution);
             FileWriter.WriteToOutputFile(outputFileName.Replace(".txt", "_l.txt"), library_solution);
+
+            //TODO:
+            //1. Execute tests in loop
+            //2. Write execution time to separate file
         }
     }
 }
