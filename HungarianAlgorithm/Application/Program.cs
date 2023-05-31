@@ -27,12 +27,14 @@ namespace Application
             }
 
             options.LogStateToConsole("Initializing algorithm..");
-            IAlgorithm hungarian = new Hungarian.Algorithms.HungarianAlgorithm(problemInstance);
+            IAlgorithm hungarian = new HungarianAlgorithm(problemInstance);
             IAlgorithm library = new LibraryAlgorithm(problemInstance);
-            IAlgorithm brute = new Hungarian.Algorithms.BruteForceAlgorithm(problemInstance);
+            IAlgorithm brute = new BruteForceAlgorithm(problemInstance);
 
             var distances = problemInstance.CreateDistancesIntMatrix();
             //var distances = problemInstance.CreateDistancesDecimalMatrix();
+
+            options.LogStateToConsole("Starting computations..");
 
             var timer = new Stopwatch();
             timer.Start();
@@ -55,7 +57,6 @@ namespace Application
             timeTaken = timer.Elapsed;
             Console.WriteLine("Brute force: " + timeTaken.ToString(@"m\:ss\.fff")); //n*k = 12 takes about 15 minutes
 
-            options.LogStateToConsole("Staring computations..");
             options.LogStateToConsole("Solution found.");
 
             if (options.WriteSolutionToConsole)
