@@ -105,20 +105,15 @@ namespace Hungarian
                                     if (!eqGraph.ContainsEdge(well, s) && !eqGraph.ContainsEdge(s, well) &&
                                         cost == _graph.GetVertexLabel(well) + _graph.GetVertexLabel(s))
                                     {
-                                        var newEdge = new Edge<int>(s, well);
-                                        alternatingTree.AddEdge(newEdge);
-                                        eqGraph.AddEdge(newEdge);
-                                        nextT = edge.GetOtherVertex(s);
+                                        edgeToNextT = new Edge<int>(s, well);
+                                        eqGraph.AddEdge(edgeToNextT);
                                     }
                                 }
                             }
                         }
                     }
-                    else
-                    {
-                        alternatingTree.AddEdge(edgeToNextT!);
-                        nextT = edgeToNextT!.Target;
-                    }
+                    alternatingTree.AddEdge(edgeToNextT!);
+                    nextT = edgeToNextT!.Target;
                     T.Add(nextT);
 
                     // nextT is vertex from (N_p(S) \ T)
@@ -127,7 +122,7 @@ namespace Hungarian
                     {
                         path = new List<Edge<int>>();
 
-                        Edge<int> pathEdge = alternatingTree.InEdges(nextT).First();
+                        Edge<int> pathEdge = edgeToNextT!;
                         while (pathEdge.Source != free_s)
                         {
                             path.Add(pathEdge);
