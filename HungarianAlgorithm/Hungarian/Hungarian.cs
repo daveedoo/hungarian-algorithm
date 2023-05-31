@@ -1,6 +1,5 @@
 ﻿using QuikGraph;
 using QuikGraph.Collections;
-using System;
 
 namespace Hungarian
 {
@@ -48,6 +47,8 @@ namespace Hungarian
                 int free_s = verticesMatched.TakeWhile(h => h == true).Count();     // root of the alternating tree
                 var S = new HashSet<int> { free_s };                                // set of alternating tree vertices from H
                 var T = new HashSet<int>();                                         // set of alternating tree vertices from W
+                var alternatingTree = new BidirectionalGraph<int, Edge<int>>();
+                alternatingTree.AddVertexRange(Enumerable.Range(0, 2 * N));
 
                 // SLACK: inital slackness
                 var wellsSlackness = new decimal[2*N];  // first N array values are not used. For convenience of use with wells vertices numbers
@@ -57,14 +58,13 @@ namespace Hungarian
                     wellsSlackness[well] = edge.Tag - _graph.GetVertexLabel(well) - _graph.GetVertexLabel(free_s);
                 }
 
+
                 List<Edge<int>> path = null;
                 while (path is null)
                 {
-                    if (AreAllNeighboursInSet(eqGraph, S, T, out int? nextT))   // TODO: call this method once and only update bool when S or T is modified
+                    if (AreAllNeighboursInSet(eqGraph, S, T, out int? nextT, out int? fromS))   // TODO: call this method once and only update bool when S or T is modified
                     {
                         decimal delta = W.Except(T).Select(w => wellsSlackness[w]).Min();
-
-                        // TODO: use wellsSlackness
                         foreach (int s in S)
                         {
                             _graph.AddValueToVertexLabel(s, delta);
@@ -101,16 +101,25 @@ namespace Hungarian
                                 foreach (var s in S)
                                 {
                                     _graph.TryGetEdge(well, s, out var edge);
-                                    if (!eqGraph.ContainsEdge(edge.Source, edge.Target) && !eqGraph.ContainsEdge(edge.Target, edge.Source) &&
-                                        edge.Tag == _graph.GetVertexLabel(edge.Source) + _graph.GetVertexLabel(edge.Target))
+                                    var cost = edge.Tag;
+
+                                    if (!eqGraph.ContainsEdge(well, s) && !eqGraph.ContainsEdge(s, well) &&
+                                        cost == _graph.GetVertexLabel(well) + _graph.GetVertexLabel(s))
                                     {
-                                        eqGraph.AddEdge(new Edge<int>(edge.Source, edge.Target));
+                                        var newEdge = new Edge<int>(s, well);
+                                        alternatingTree.AddEdge(newEdge);
+                                        eqGraph.AddEdge(newEdge);
                                         nextT = edge.GetOtherVertex(s);
                                     }
                                 }
                             }
                         }
                     }
+                    else
+                    {
+                        alternatingTree.AddEdge(new Edge<int>(fromS!.Value, nextT!.Value));
+                    }
+                    T.Add(nextT!.Value);
 
                     // nextT is vertex from (N_p(S) \ T)
                     var nextTMatchingEdge = Matching.Find(e => e.Source == nextT || e.Target == nextT);
@@ -118,7 +127,6 @@ namespace Hungarian
                     {
                         path = new List<Edge<int>>();
 
-                        var alternatingTree = GetAlternatingTree(eqGraph, free_s);
                         Edge<int> pathEdge = alternatingTree.InEdges(nextT!.Value).First();
                         while (pathEdge.Source != free_s)
                         {
@@ -131,7 +139,7 @@ namespace Hungarian
                     {
                         int newS = nextTMatchingEdge.GetOtherVertex(nextT!.Value);
                         S.Add(newS);
-                        T.Add(nextT!.Value);
+                        alternatingTree.AddEdge(new Edge<int>(nextT!.Value, newS));
                         
                         // SLACK:: update necessary values
                         foreach (var well in W.Except(T))
@@ -177,35 +185,6 @@ namespace Hungarian
             return CreateSolution(Matching);
         }
 
-        private IMutableBidirectionalGraph<int, Edge<int>> GetAlternatingTree(IMutableBidirectionalGraph<int, Edge<int>> graph, int root)
-        {
-            var alternatingTree = new BidirectionalGraph<int, Edge<int>>();
-            alternatingTree.AddVertexRange(graph.Vertices);
-
-            var queue = new System.Collections.Generic.Queue<int>();
-            bool[] visitedVertices = new bool[graph.VertexCount];
-            
-            queue.Enqueue(root);
-            visitedVertices[root] = true;
-
-            while (queue.Count > 0)
-            {
-                var v = queue.Dequeue();
-                foreach (var edge in graph.OutEdges(v))
-                {
-                    var neighbor = edge.GetOtherVertex(v);
-                    if (!visitedVertices[neighbor])
-                    {
-                        visitedVertices[neighbor] = true;
-                        alternatingTree.AddEdge(edge);
-                        queue.Enqueue(neighbor);
-                    }
-                }
-            }
-
-            return alternatingTree;
-        }
-
         private Solution CreateSolution(EdgeList<int, Edge<int>> matching)
         {
             int N = _problemInstance.N;
@@ -230,8 +209,15 @@ namespace Hungarian
             return new Solution(assignments);
         }
 
-        private bool AreAllNeighboursInSet(IImplicitGraph<int, Edge<int>> graph, ISet<int> sourcesSet, ISet<int> neighboursSet, out int? freeNeighbour)
+        /// <param name="freeNeighbour">
+        ///     Vertex adjacent in graph <paramref name="graph"/> to <paramref name="fromS"/> from <paramref name="sourcesSet"/>.
+        ///     Set only if <c>false</c> returned.
+        /// </param>
+        /// <param name="fromS">Set only if <paramref name="freeNeighbour"/> set.</param>
+        /// <returns></returns>
+        private bool AreAllNeighboursInSet(IImplicitGraph<int, Edge<int>> graph, ISet<int> sourcesSet, ISet<int> neighboursSet, out int? freeNeighbour, out int? fromS)
         {
+            fromS = null;
             freeNeighbour = null;
 
             foreach (int s in sourcesSet)
@@ -241,6 +227,7 @@ namespace Hungarian
                     int neighbour = edge.GetOtherVertex(s);
                     if (!neighboursSet.Contains(neighbour))
                     {
+                        fromS = s;
                         freeNeighbour = neighbour;
                         return false;
                     }
