@@ -47,6 +47,7 @@ namespace Hungarian
                 int free_s = verticesMatched.TakeWhile(h => h == true).Count();     // root of the alternating tree
                 var S = new HashSet<int> { free_s };                                // set of alternating tree vertices from H
                 var T = new HashSet<int>();                                         // set of alternating tree vertices from W
+                var WExceptT = new HashSet<int>(W);
                 var alternatingTree = new BidirectionalGraph<int, Edge<int>>();
                 alternatingTree.AddVertexRange(Enumerable.Range(0, 2 * N));
 
@@ -64,7 +65,7 @@ namespace Hungarian
                 {
                     if (AreAllNeighboursInSet(eqGraph, S, T, out int? nextT, out int? fromS))   // TODO: call this method once and only update bool when S or T is modified
                     {
-                        decimal delta = W.Except(T).Select(w => wellsSlackness[w]).Min();
+                        decimal delta = WExceptT.Select(w => wellsSlackness[w]).Min();
                         foreach (int s in S)
                         {
                             _graph.AddValueToVertexLabel(s, delta);
@@ -73,7 +74,7 @@ namespace Hungarian
                         {
                             _graph.AddValueToVertexLabel(t, -delta);
                         }
-                        foreach (var well in W.Except(T))
+                        foreach (var well in WExceptT)
                         {
                             wellsSlackness[well] -= delta;
                             if (wellsSlackness[well] < 0.0m)
@@ -94,7 +95,7 @@ namespace Hungarian
                         {
                             eqGraph.RemoveEdge(edge);
                         }
-                        foreach (var well in W.Except(T))
+                        foreach (var well in WExceptT)
                         {
                             if (wellsSlackness[well] == 0.0m)
                             {
@@ -120,6 +121,7 @@ namespace Hungarian
                         alternatingTree.AddEdge(new Edge<int>(fromS!.Value, nextT!.Value));
                     }
                     T.Add(nextT!.Value);
+                    WExceptT.Remove(nextT.Value);
 
                     // nextT is vertex from (N_p(S) \ T)
                     var nextTMatchingEdge = Matching.Find(e => e.Source == nextT || e.Target == nextT);
@@ -142,7 +144,7 @@ namespace Hungarian
                         alternatingTree.AddEdge(new Edge<int>(nextT!.Value, newS));
                         
                         // SLACK:: update necessary values
-                        foreach (var well in W.Except(T))
+                        foreach (var well in WExceptT)
                         {
                             _graph.TryGetEdge(well, newS, out var edge);
                             decimal newSSlackness = edge.Tag - _graph.GetVertexLabel(edge.Source) - _graph.GetVertexLabel(edge.Target);
