@@ -50,7 +50,7 @@
 
         public decimal[,] CreateDistancesDecimalMatrix()
         {
-            var costMatrix = new decimal[N * K, N];
+            var costMatrix = new decimal[N * K, N * K];
 
             for (int i = 0; i < N * K; i++)
             {
