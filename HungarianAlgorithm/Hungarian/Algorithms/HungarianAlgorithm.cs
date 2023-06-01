@@ -103,10 +103,11 @@ namespace Hungarian.Algorithms
                             }
                         }
                     }
+
                     alternatingTree.AddEdge(edgeToNextT!);
                     nextT = edgeToNextT!.Target;
                     T.Add(nextT);
-                    WExceptT.Remove(nextT.Value);
+                    WExceptT.Remove(nextT);
 
                     // nextT is vertex from (N_p(S) \ T)
                     var nextTMatchingEdge = Matching.Find(e => e.Source == nextT || e.Target == nextT);
