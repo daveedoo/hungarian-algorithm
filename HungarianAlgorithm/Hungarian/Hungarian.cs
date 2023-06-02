@@ -108,6 +108,7 @@ namespace Hungarian
                                     {
                                         edgeToNextT = new Edge<int>(s, well);
                                         eqGraph.AddEdge(edgeToNextT);
+                                        areAllNeighborsInT[s] = false;
                                     }
                                 }
                             }
@@ -116,7 +117,7 @@ namespace Hungarian
                     alternatingTree.AddEdge(edgeToNextT!);
                     nextT = edgeToNextT!.Target;
                     T.Add(nextT);
-                    WExceptT.Remove(nextT.Value);
+                    WExceptT.Remove(nextT);
 
                     // nextT is vertex from (N_p(S) \ T)
                     var nextTMatchingEdge = Matching.Find(e => e.Source == nextT || e.Target == nextT);
