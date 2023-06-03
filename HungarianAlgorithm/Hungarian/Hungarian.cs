@@ -94,22 +94,20 @@ namespace Hungarian
                         {
                             eqGraph.RemoveEdge(edge);
                         }
-                        foreach (var well in WExceptT)
+                        var newTVertices = WExceptT.Where(well => wellsSlackness[well] == 0.0m);
+                        foreach (var well in newTVertices)
                         {
-                            if (wellsSlackness[well] == 0.0m)
+                            foreach (var s in S)
                             {
-                                foreach (var s in S)
-                                {
-                                    _graph.TryGetEdge(well, s, out var edge);
-                                    var cost = edge.Tag;
+                                _graph.TryGetEdge(well, s, out var edge);
+                                var cost = edge.Tag;
 
-                                    if (!eqGraph.ContainsEdge(well, s) && !eqGraph.ContainsEdge(s, well) &&
-                                        cost == _graph.GetVertexLabel(well) + _graph.GetVertexLabel(s))
-                                    {
-                                        edgeToNextT = new Edge<int>(s, well);
-                                        eqGraph.AddEdge(edgeToNextT);
-                                        areAllNeighborsInT[s] = false;
-                                    }
+                                if (!eqGraph.ContainsEdge(well, s) && !eqGraph.ContainsEdge(s, well) &&
+                                    cost == _graph.GetVertexLabel(well) + _graph.GetVertexLabel(s))
+                                {
+                                    edgeToNextT = new Edge<int>(s, well);
+                                    eqGraph.AddEdge(edgeToNextT);
+                                    areAllNeighborsInT[s] = false;
                                 }
                             }
                         }
