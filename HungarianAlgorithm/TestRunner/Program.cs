@@ -10,8 +10,8 @@ namespace TestRunner
     {
         public static void Main(string[] args)
         {
-            int[] seeds = { 420, 9999, 12345 };
-            int numberOfRuns = 3;
+            int[] seeds = { 420, 9999, 12345, 432151, 513251451, 7363633 };
+            int numberOfRuns = seeds.Length;
             string testResultsFilePath = "../../../../Application/Output/TestResults.txt";
 
             (int N, IEnumerable<int> Ks)[] tests = new (int N, IEnumerable<int> Ks)[]
@@ -36,6 +36,8 @@ namespace TestRunner
             int totalTestsCount = tests.Sum(test => test.Ks.Count());
 
             int testIndex = 1;
+            var timer = new Stopwatch();
+            timer.Start();
             foreach (var test in tests)
             {
                 foreach (var K in test.Ks)
@@ -55,6 +57,11 @@ namespace TestRunner
                     testIndex++;
                 }
             }
+            timer.Stop();
+            TimeSpan totalTestsExeutionTime = timer.Elapsed;
+
+            Console.WriteLine();
+            Console.WriteLine($"Total tests execution time: {totalTestsExeutionTime.ToString(@"hh\:mm\:ss\.fff")}");
         }
 
         private static (TimeSpan hungarianExecutionTime, TimeSpan libraryExecutionTime, bool doesAssignmentCostMatch) ExecuteTestAndGetAlgorithmsExecutionTimes(int N, int K, int run, int seed)
@@ -76,14 +83,14 @@ namespace TestRunner
             Solution hungarianSolution = hungarian.Solve(distances);
             timer.Stop();
             TimeSpan hungarianExecutionTime = timer.Elapsed;
-            Console.WriteLine("Hungarian: " + hungarianExecutionTime.ToString(@"m\:ss\.fff"));
+            Console.WriteLine("Hungarian: " + hungarianExecutionTime.ToString(@"hh\:mm\:ss\.fff"));
 
             timer = new Stopwatch();
             timer.Start();
             Solution librarySolution = library.Solve(distances);
             timer.Stop();
             TimeSpan libraryExecutionTime = timer.Elapsed;
-            Console.WriteLine("Library: " + libraryExecutionTime.ToString(@"m\:ss\.fff"));
+            Console.WriteLine("Library: " + libraryExecutionTime.ToString(@"hh\:mm\:ss\.fff"));
 
             FileWriter.WriteToOutputFile(outputFileName.Replace(".txt", "_h.txt"), hungarianSolution);
             FileWriter.WriteToOutputFile(outputFileName.Replace(".txt", "_l.txt"), librarySolution);
