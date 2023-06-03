@@ -4,9 +4,12 @@
     {
         public readonly IEnumerable<WellAssignments> Assignments;
 
+        public readonly decimal TotalAssignmentCost;
+
         public Solution(IEnumerable<WellAssignments> assignments)
         {
             Assignments = assignments;
+            TotalAssignmentCost = assignments.Sum(assignment => assignment.GetTotalAssignmentCost());
         }
 
         public void Write(TextWriter? textWriter = null)
@@ -17,12 +20,7 @@
                 assignment.Write(textWriter);
             }
 
-            textWriter.WriteLine($"Sumaryczny koszt: {GetTotalAssignmentCost()}");
-        }
-
-        public decimal GetTotalAssignmentCost()
-        {
-            return Assignments.Sum(assignment => assignment.GetTotalAssignmentCost());
+            textWriter.WriteLine($"Sumaryczny koszt: {TotalAssignmentCost}");
         }
     }
 }
