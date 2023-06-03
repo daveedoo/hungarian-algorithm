@@ -48,17 +48,25 @@ namespace TestRunner
                 {
                     int run = 0;
                     Console.WriteLine($"Executing test ({testIndex}/{totalTestsCount}): N: {test.N}, K: {K}");
-                    TimeSpan totalExecutionTimeForTest = TimeSpan.Zero;
+                    TimeSpan totalExecutionTimeForTestHung = TimeSpan.Zero;
+                    TimeSpan totalExecutionTimeForTestLibr = TimeSpan.Zero;
                     foreach (int seed in test.seeds)
                     {
                         run++;
                         Console.WriteLine($"Run {run}:");
-                        totalExecutionTimeForTest += ExecuteTestAndGetAlgorithmsExecutionTimes(test.N, K, seed);
+                        (TimeSpan hung, TimeSpan lib, bool ok) = ExecuteTestAndGetAlgorithmsExecutionTimes(test.N, K, seed);
+                        totalExecutionTimeForTestHung += hung;
+                        totalExecutionTimeForTestLibr += lib;
+                        Console.WriteLine($"\t\t{ok.ToString().ToUpper()}");
+                        if (!ok)
+                            throw new Exception("BAD!");
                     }
 
                     using (StreamWriter sw = File.AppendText(testResultsFilePath))
                     {
-                        sw.WriteLine($"{test.N}, {K}, {(totalExecutionTimeForTest / test.seeds.Count()).TotalSeconds}");
+                        var averageH = (totalExecutionTimeForTestHung / test.seeds.Count()).TotalSeconds;
+                        var averageL = (totalExecutionTimeForTestLibr / test.seeds.Count()).TotalSeconds;
+                        sw.WriteLine($"{test.N}, {K}, {averageH}, {averageL}");
                     }
 
                     testIndex++;
@@ -71,22 +79,30 @@ namespace TestRunner
             Console.WriteLine($"Total tests execution time: {totalTestsExeutionTime.ToString(@"hh\:mm\:ss\.fff")}");
         }
 
-        private static TimeSpan ExecuteTestAndGetAlgorithmsExecutionTimes(int N, int K, int seed)
+        private static (TimeSpan h, TimeSpan l, bool ok) ExecuteTestAndGetAlgorithmsExecutionTimes(int N, int K, int seed)
         {
             ProblemInstance problemInstance = ProblemInstanceGenerator.GenerateProblemInstance(N, K, seed);
 
             IAlgorithm hungarian = new HungarianAlgorithm(problemInstance);
+            IAlgorithm library = new LibraryAlgorithm(problemInstance);
 
-            var distances = problemInstance.CreateDistancesDecimalMatrix();
+            var distances = problemInstance.CreateDistancesIntMatrix();
 
             var timer = new Stopwatch();
             timer.Start();
-            hungarian.Solve(distances);
+            var solH = hungarian.Solve(distances);
             timer.Stop();
             TimeSpan hungarianExecutionTime = timer.Elapsed;
             Console.WriteLine("Hungarian: " + hungarianExecutionTime.ToString(@"hh\:mm\:ss\.fff"));
 
-            return hungarianExecutionTime;
+            timer = new Stopwatch();
+            timer.Start();
+            var solL = library.Solve(distances);
+            timer.Stop();
+            TimeSpan libraryExecutionTime = timer.Elapsed;
+            Console.WriteLine("Library: " + libraryExecutionTime.ToString(@"hh\:mm\:ss\.fff"));
+
+            return (hungarianExecutionTime, libraryExecutionTime, solH.TotalAssignmentCost == solL.TotalAssignmentCost);
         }
     }
 }
