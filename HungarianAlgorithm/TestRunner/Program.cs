@@ -77,8 +77,7 @@ namespace TestRunner
 
             IAlgorithm hungarian = new HungarianAlgorithm(problemInstance);
 
-            var distances = problemInstance.CreateDistancesIntMatrix();
-            //var distances = problemInstance.CreateDistancesDecimalMatrix();
+            var distances = problemInstance.CreateDistancesDecimalMatrix();
 
             var timer = new Stopwatch();
             timer.Start();
