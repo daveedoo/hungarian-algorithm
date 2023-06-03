@@ -226,12 +226,6 @@ namespace Hungarian
             return new Solution(assignments);
         }
 
-        /// <param name="freeNeighbour">
-        ///     Vertex adjacent in graph <paramref name="graph"/> to <paramref name="fromS"/> from <paramref name="sourcesSet"/>.
-        ///     Set only if <c>false</c> returned.
-        /// </param>
-        /// <param name="fromS">Set only if <paramref name="freeNeighbour"/> set.</param>
-        /// <returns></returns>
         private bool AreAllNeighborsInSet(IImplicitGraph<int, Edge<int>> graph, ISet<int> sourcesSet, ISet<int> neighboursSet,
             bool[] allNeighborsDone, out Edge<int>? edgeToNextT)
         {
