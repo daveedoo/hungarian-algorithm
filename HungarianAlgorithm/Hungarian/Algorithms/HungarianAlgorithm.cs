@@ -54,7 +54,8 @@ namespace Hungarian.Algorithms
                 while (path is null)
                 {
                     int nextT = -1;
-                    if (AreAllNeighborsInSet(eqGraph, S, T, areAllNeighborsInT, out Edge<int>? edgeToNextT))
+                    var edgesToNextTs = new List<Edge<int>>();
+                    if (AreAllNeighborsInSet(eqGraph, S, T, areAllNeighborsInT, out Edge<int>? _edgeToNextT))
                     {
                         decimal delta = WExceptT.Select(w => wellsSlackness[w]).Min();
                         foreach (int s in S)
@@ -84,58 +85,76 @@ namespace Hungarian.Algorithms
                         {
                             eqGraph.RemoveEdge(edge);
                         }
-                        foreach (var well in WExceptT)
-                        {
-                            if (wellsSlackness[well] == 0.0m)
-                            {
-                                foreach (var s in S)
-                                {
-                                    _graph.TryGetEdge(well, s, out var edge);
-                                    var cost = edge.Tag;
 
-                                    if (!eqGraph.ContainsEdge(well, s) && !eqGraph.ContainsEdge(s, well) &&
-                                        cost == _graph.GetVertexLabel(well) + _graph.GetVertexLabel(s))
-                                    {
-                                        edgeToNextT = new Edge<int>(s, well);
-                                        eqGraph.AddEdge(edgeToNextT);
-                                    }
+                        var newTVertices = WExceptT.Where(well => wellsSlackness[well] == 0.0m);
+                        foreach (var well in newTVertices)
+                        {
+                            // we add all tightened edges to the eqGraph,
+                            // but we need only one of them to add to the alternating tree
+                            Edge<int>? edgeToNewT = null;
+                            foreach (var s in S)
+                            {
+                                _graph.TryGetEdge(well, s, out var edge);
+                                var cost = edge.Tag;
+
+                                if (!eqGraph.ContainsEdge(well, s) && !eqGraph.ContainsEdge(s, well) &&
+                                    cost == _graph.GetVertexLabel(well) + _graph.GetVertexLabel(s))
+                                {
+                                    var newEqEdge = new Edge<int>(s, well);
+                                    eqGraph.AddEdge(newEqEdge);
+
+                                    //areAllNeighborsInT[s] = false;
+                                    if (edgeToNewT is null)
+                                        edgeToNewT = newEqEdge;
                                 }
                             }
+                            edgesToNextTs.Add(edgeToNewT!);
                         }
-                    }
-
-                    alternatingTree.AddEdge(edgeToNextT!);
-                    nextT = edgeToNextT!.Target;
-                    T.Add(nextT);
-                    WExceptT.Remove(nextT);
-
-                    // nextT is vertex from (N_p(S) \ T)
-                    var nextTMatchingEdge = Matching.Find(e => e.Source == nextT || e.Target == nextT);
-                    if (nextTMatchingEdge is null)
-                    {
-                        path = new List<Edge<int>>();
-
-                        Edge<int> pathEdge = edgeToNextT!;
-                        while (pathEdge.Source != free_s)
-                        {
-                            path.Add(pathEdge);
-                            pathEdge = alternatingTree.InEdges(pathEdge.Source).First();
-                        }
-                        path.Add(pathEdge);
                     }
                     else
                     {
-                        int newS = nextTMatchingEdge.GetOtherVertex(nextT);
-                        S.Add(newS);
-                        alternatingTree.AddEdge(new Edge<int>(nextT, newS));
-                        
-                        // SLACK:: update necessary values
-                        foreach (var well in WExceptT)
+                        // only one edge added to the list if we are here
+                        edgesToNextTs.Add(_edgeToNextT!);
+                    }
+
+                    // all of newTVertices need to be added to T
+                    // we can then process them all at once
+                    foreach (var edgeToNextT in edgesToNextTs)
+                    {
+                        alternatingTree.AddEdge(edgeToNextT!);
+                        nextT = edgeToNextT!.Target;
+                        T.Add(nextT);
+                        WExceptT.Remove(nextT);
+
+                        // nextT is vertex from (N_p(S) \ T)
+                        var nextTMatchingEdge = Matching.Find(e => e.Source == nextT || e.Target == nextT);
+                        if (nextTMatchingEdge is null)
                         {
-                            _graph.TryGetEdge(well, newS, out var edge);
-                            decimal newSSlackness = edge.Tag - _graph.GetVertexLabel(edge.Source) - _graph.GetVertexLabel(edge.Target);
-                            if (newSSlackness < wellsSlackness[well])
-                                wellsSlackness[well] = newSSlackness;
+                            path = new List<Edge<int>>();
+
+                            Edge<int> pathEdge = edgeToNextT!;
+                            while (pathEdge.Source != free_s)
+                            {
+                                path.Add(pathEdge);
+                                pathEdge = alternatingTree.InEdges(pathEdge.Source).First();
+                            }
+                            path.Add(pathEdge);
+                            break;  // we found the path, so we can break
+                        }
+                        else
+                        {
+                            int newS = nextTMatchingEdge.GetOtherVertex(nextT);
+                            S.Add(newS);
+                            alternatingTree.AddEdge(new Edge<int>(nextT, newS));
+                        
+                            // SLACK:: update necessary values
+                            foreach (var well in WExceptT)
+                            {
+                                _graph.TryGetEdge(well, newS, out var edge);
+                                decimal newSSlackness = edge.Tag - _graph.GetVertexLabel(edge.Source) - _graph.GetVertexLabel(edge.Target);
+                                if (newSSlackness < wellsSlackness[well])
+                                    wellsSlackness[well] = newSSlackness;
+                            }
                         }
                     }
                 }
@@ -198,12 +217,6 @@ namespace Hungarian.Algorithms
             return new Solution(assignments);
         }
 
-        /// <param name="freeNeighbour">
-        ///     Vertex adjacent in graph <paramref name="graph"/> to <paramref name="fromS"/> from <paramref name="sourcesSet"/>.
-        ///     Set only if <c>false</c> returned.
-        /// </param>
-        /// <param name="fromS">Set only if <paramref name="freeNeighbour"/> set.</param>
-        /// <returns></returns>
         private bool AreAllNeighborsInSet(IImplicitGraph<int, Edge<int>> graph, ISet<int> sourcesSet, ISet<int> neighboursSet,
             bool[] allNeighborsDone, out Edge<int>? edgeToNextT)
         {
