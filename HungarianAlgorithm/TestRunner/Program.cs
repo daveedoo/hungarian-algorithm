@@ -34,8 +34,8 @@ namespace TestRunner
                 (50, Enumerable.Range(1, 5), Enumerable.Range(1, 10)),
                 (100, Enumerable.Range(1, 4), Enumerable.Range(1, 5)),
                 (200, Enumerable.Range(1, 3), Enumerable.Range(1, 5)),
-                (500, Enumerable.Range(1, 2), Enumerable.Range(1, 2)),
-                (1000, Enumerable.Range(1, 1), Enumerable.Range(1, 1)),
+                (500, Enumerable.Range(1, 2), Enumerable.Range(1, 5)),
+                (1000, Enumerable.Range(1, 1), Enumerable.Range(1, 5)),
             };
             int totalTestsCount = tests.Sum(test => test.Ks.Count());
 
@@ -49,16 +49,19 @@ namespace TestRunner
                     int run = 0;
                     Console.WriteLine($"Executing test ({testIndex}/{totalTestsCount}): N: {test.N}, K: {K}");
                     TimeSpan totalExecutionTimeForTest = TimeSpan.Zero;
+                    bool solutionsMatch = true;
                     foreach (int seed in test.seeds)
                     {
                         run++;
                         Console.WriteLine($"Run {run}:");
-                        totalExecutionTimeForTest += ExecuteTestAndGetAlgorithmsExecutionTimes(test.N, K, seed);
+                        (TimeSpan hungarianExecutionTime, TimeSpan libraryExecutionTime, bool doesAssignmentCostMatch) = ExecuteTestAndGetAlgorithmsExecutionTimes(test.N, K, run, seed);
+                        totalExecutionTimeForTest += hungarianExecutionTime;
+                        solutionsMatch &= doesAssignmentCostMatch;
                     }
 
                     using (StreamWriter sw = File.AppendText(testResultsFilePath))
                     {
-                        sw.WriteLine($"{test.N}, {K}, {(totalExecutionTimeForTest / test.seeds.Count()).TotalSeconds}");
+                        sw.WriteLine($"{test.N}, {K}, {(totalExecutionTimeForTest / test.seeds.Count()).TotalSeconds}, {solutionsMatch}");
                     }
 
                     testIndex++;
@@ -71,22 +74,38 @@ namespace TestRunner
             Console.WriteLine($"Total tests execution time: {totalTestsExeutionTime.ToString(@"hh\:mm\:ss\.fff")}");
         }
 
-        private static TimeSpan ExecuteTestAndGetAlgorithmsExecutionTimes(int N, int K, int seed)
+        private static (TimeSpan hungarianExecutionTime, TimeSpan libraryExecutionTime, bool doesAssignmentCostMatch) ExecuteTestAndGetAlgorithmsExecutionTimes(int N, int K, int run, int seed)
         {
+            string inputFileName = $"../../../../Application/Input/{N}_{K}_{run}.txt";
+            string outputFileName = inputFileName.Replace("Input", "Output");
+
             ProblemInstance problemInstance = ProblemInstanceGenerator.GenerateProblemInstance(N, K, seed);
+            FileWriter.WriteToOutputFile(inputFileName, problemInstance);
 
             IAlgorithm hungarian = new HungarianAlgorithm(problemInstance);
+            IAlgorithm library = new LibraryAlgorithm(problemInstance);
 
-            var distances = problemInstance.CreateDistancesDecimalMatrix();
+            var distances = problemInstance.CreateDistancesIntMatrix();
+            //var distances = problemInstance.CreateDistancesDecimalMatrix();
 
             var timer = new Stopwatch();
             timer.Start();
-            hungarian.Solve(distances);
+            Solution hungarianSolution = hungarian.Solve(distances);
             timer.Stop();
             TimeSpan hungarianExecutionTime = timer.Elapsed;
             Console.WriteLine("Hungarian: " + hungarianExecutionTime.ToString(@"hh\:mm\:ss\.fff"));
 
-            return hungarianExecutionTime;
+            timer = new Stopwatch();
+            timer.Start();
+            Solution librarySolution = library.Solve(distances);
+            timer.Stop();
+            TimeSpan libraryExecutionTime = timer.Elapsed;
+            Console.WriteLine("Library: " + libraryExecutionTime.ToString(@"hh\:mm\:ss\.fff"));
+
+            FileWriter.WriteToOutputFile(outputFileName.Replace(".txt", "_h.txt"), hungarianSolution);
+            FileWriter.WriteToOutputFile(outputFileName.Replace(".txt", "_l.txt"), librarySolution);
+
+            return (hungarianExecutionTime, libraryExecutionTime, hungarianSolution.TotalAssignmentCost == librarySolution.TotalAssignmentCost);
         }
     }
 }
