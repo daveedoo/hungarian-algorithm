@@ -28,8 +28,8 @@ namespace Application
             options.LogStateToConsole("Initializing algorithm..");
             IAlgorithm hungarian = new HungarianAlgorithm(problemInstance);
 
-            var distances = problemInstance.CreateDistancesIntMatrix();
-            //var distances = problemInstance.CreateDistancesDecimalMatrix();
+            //var distances = problemInstance.CreateDistancesIntMatrix();
+            var distances = problemInstance.CreateDistancesDecimalMatrix();
 
             options.LogStateToConsole("Starting computations..");
             Solution hungarian_solution = hungarian.Solve(distances);
