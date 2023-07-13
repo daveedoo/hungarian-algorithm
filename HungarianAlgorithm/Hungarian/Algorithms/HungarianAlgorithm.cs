@@ -26,7 +26,7 @@ namespace Hungarian.Algorithms
             int N = _problemInstance.N * _problemInstance.K;
             var Matching = new EdgeList<int, Edge<int>>();
 
-            SetStartingPotential(_graph, out IMutableBidirectionalGraph<int, Edge<int>> eqGraph);
+            SetStartingPotential(_graph, out IMutableBidirectionalGraph<int, Edge<int>> _);
 
             var H = Enumerable.Range(0, N).ToHashSet();     // all house vertices
             var W = Enumerable.Range(N, N).ToHashSet();     // all well vertices
@@ -55,7 +55,7 @@ namespace Hungarian.Algorithms
                 {
                     int nextT = -1;
                     var edgesToNextTs = new List<Edge<int>>();
-                    if (AreAllNeighborsInSet(eqGraph, S, T, areAllNeighborsInT, out Edge<int>? _edgeToNextT))
+                    if (AreAllNeighborsInSet(_graph, S, T, areAllNeighborsInT, out Edge<int>? _edgeToNextT))
                     {
                         decimal delta = WExceptT.Select(w => wellsSlackness[w]).Min();
                         foreach (int s in S)
@@ -72,19 +72,19 @@ namespace Hungarian.Algorithms
                         }
 
                         // Update eqGraph
-                        var edgesToRemove = new List<Edge<int>>();
-                        foreach (var edge in eqGraph.Edges)
-                        {
-                            _graph.TryGetEdge(edge.Source, edge.Target, out var e);
-                            if (e.Tag != _graph.GetVertexLabel(edge.Source) + _graph.GetVertexLabel(edge.Target))
-                            {
-                                edgesToRemove.Add(edge);
-                            }
-                        }
-                        foreach (var edge in edgesToRemove)
-                        {
-                            eqGraph.RemoveEdge(edge);
-                        }
+                        //var edgesToRemove = new List<Edge<int>>();
+                        //foreach (var edge in eqGraph.Edges)
+                        //{
+                        //    _graph.TryGetEdge(edge.Source, edge.Target, out var e);
+                        //    if (e.Tag != _graph.GetVertexLabel(edge.Source) + _graph.GetVertexLabel(edge.Target))
+                        //    {
+                        //        edgesToRemove.Add(edge);
+                        //    }
+                        //}
+                        //foreach (var edge in edgesToRemove)
+                        //{
+                        //    eqGraph.RemoveEdge(edge);
+                        //}
 
                         var newTVertices = WExceptT.Where(well => wellsSlackness[well] == 0.0m);
                         foreach (var well in newTVertices)
@@ -97,15 +97,15 @@ namespace Hungarian.Algorithms
                                 _graph.TryGetEdge(well, s, out var edge);
                                 var cost = edge.Tag;
 
-                                if (!eqGraph.ContainsEdge(well, s) && !eqGraph.ContainsEdge(s, well) &&
-                                    cost == _graph.GetVertexLabel(well) + _graph.GetVertexLabel(s))
+                                if (cost == _graph.GetVertexLabel(well) + _graph.GetVertexLabel(s))
                                 {
                                     var newEqEdge = new Edge<int>(s, well);
-                                    eqGraph.AddEdge(newEqEdge);
+                                    //eqGraph.AddEdge(newEqEdge);
 
                                     //areAllNeighborsInT[s] = false;
                                     if (edgeToNewT is null)
                                         edgeToNewT = newEqEdge;
+                                    break;
                                 }
                             }
                             edgesToNextTs.Add(edgeToNewT!);
@@ -146,7 +146,7 @@ namespace Hungarian.Algorithms
                             int newS = nextTMatchingEdge.GetOtherVertex(nextT);
                             S.Add(newS);
                             alternatingTree.AddEdge(new Edge<int>(nextT, newS));
-                        
+
                             // SLACK:: update necessary values
                             foreach (var well in WExceptT)
                             {
@@ -165,24 +165,24 @@ namespace Hungarian.Algorithms
                     var edgeToAdd = path[i];
                     Matching.Add(edgeToAdd);
 
-                    var eqEdgeToAdd = eqGraph.OutEdges(edgeToAdd.Source).Where(e => e.Target == edgeToAdd.Target).Single();
-                    eqGraph.RemoveEdge(eqEdgeToAdd);
-                    eqGraph.AddEdge(new Edge<int>(eqEdgeToAdd.Target, eqEdgeToAdd.Source));
+                    //var eqEdgeToAdd = eqGraph.OutEdges(edgeToAdd.Source).Where(e => e.Target == edgeToAdd.Target).Single();
+                    //eqGraph.RemoveEdge(eqEdgeToAdd);
+                    //eqGraph.AddEdge(new Edge<int>(eqEdgeToAdd.Target, eqEdgeToAdd.Source));
 
 
                     var edgeToRemove = path[i + 1];
                     Matching.RemoveAll(e => e.Source == edgeToRemove.Target && e.Target == edgeToRemove.Source);
 
-                    var eqEdgeToRemove = eqGraph.OutEdges(edgeToRemove.Source).Where(e => e.Target == edgeToRemove.Target).Single();
-                    eqGraph.RemoveEdge(eqEdgeToRemove);
-                    eqGraph.AddEdge(new Edge<int>(eqEdgeToRemove.Target, eqEdgeToRemove.Source));
+                    //var eqEdgeToRemove = eqGraph.OutEdges(edgeToRemove.Source).Where(e => e.Target == edgeToRemove.Target).Single();
+                    //eqGraph.RemoveEdge(eqEdgeToRemove);
+                    //eqGraph.AddEdge(new Edge<int>(eqEdgeToRemove.Target, eqEdgeToRemove.Source));
                 }
                 var lastEdge = path.Last();
                 Matching.Add(lastEdge);
 
-                var eqEdge = eqGraph.OutEdges(lastEdge.Source).Where(e => e.Target == lastEdge.Target).Single();
-                eqGraph.RemoveEdge(eqEdge);
-                eqGraph.AddEdge(new Edge<int>(eqEdge.Target, eqEdge.Source));
+                //var eqEdge = eqGraph.OutEdges(lastEdge.Source).Where(e => e.Target == lastEdge.Target).Single();
+                //eqGraph.RemoveEdge(eqEdge);
+                //eqGraph.AddEdge(new Edge<int>(eqEdge.Target, eqEdge.Source));
 
 
                 verticesMatched[path[0].Target] = true;
@@ -217,7 +217,7 @@ namespace Hungarian.Algorithms
             return new Solution(assignments);
         }
 
-        private bool AreAllNeighborsInSet(IImplicitGraph<int, Edge<int>> graph, ISet<int> sourcesSet, ISet<int> neighboursSet,
+        private bool AreAllNeighborsInSet(VertexLabelledGraph graph, ISet<int> sourcesSet, ISet<int> neighboursSet,
             bool[] allNeighborsDone, out Edge<int>? edgeToNextT)
         {
             edgeToNextT = null;
@@ -226,12 +226,15 @@ namespace Hungarian.Algorithms
             {
                 if (!allNeighborsDone[s])
                 {
-                    foreach (var edge in graph.OutEdges(s))
+                    var eqEdges = graph.AdjacentEdges(s).Where(e => e.Tag == graph.GetVertexLabel(e.Source) + graph.GetVertexLabel(e.Target));
+                    foreach (var edge in eqEdges)
+                    //foreach (var edge in graph.AdjacentEdges(s))
                     {
                         int neighbour = edge.GetOtherVertex(s);
                         if (!neighboursSet.Contains(neighbour))
                         {
-                            edgeToNextT = edge;
+                            //edgeToNextT = edge;
+                            edgeToNextT = new Edge<int>(s, edge.GetOtherVertex(s));
                             return false;
                         }
                     }
