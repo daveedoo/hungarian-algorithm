@@ -1,5 +1,10 @@
 # Hungarian-Algorithm
-Algorithm solving assignment problem on an edge-weighted graphs. Finds a maximum matching with a minimal weight in O(n^3) time.
+Algorithm solving assignment problem on an edge-weighted graphs. Finds a maximum matching with a minimal weight in (allegedly) O(n^3) time.
+
+# About the algorithm
+The detailed description of the algorithm and the results of the implementation can be found in the following documents:
+- [Initial documentation](docs/dokumentacja_wstepna.pdf) – theoretical description, analysis of correctness and complexity;
+- [Final documentation](docs/dokumentacja_końcowa.pdf) – description of the program usage, analysis of the tests performed, conclusions.
 
 # Example program run
 
